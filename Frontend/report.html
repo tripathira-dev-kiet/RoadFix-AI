@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,14 +8,14 @@
         body {
             margin: 0;
             font-family: Arial;
-            background-color: #f2f2f2;
+            background-color: #eef6ff;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
         header {
-            background-color: #0b3d91;
+            background-color: #1769aa;
             padding: 15px 50px;
             display: flex;
             justify-content: space-between;
@@ -32,16 +33,21 @@
             margin-left: 20px;
         }
 
+        nav a:hover {
+            color: #d6ecff;
+        }
+
         .container {
             width: 600px;
             margin: 40px auto;
             background-color: white;
             padding: 25px;
-            border-radius: 8px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(23, 105, 170, 0.15);
         }
 
         h2 {
-            color: #0b3d91;
+            color: #1769aa;
         }
 
         label {
@@ -49,33 +55,59 @@
             margin-top: 15px;
             margin-bottom: 5px;
             font-weight: bold;
+            color: #333;
         }
 
         input, select, textarea {
             width: 100%;
             padding: 10px;
             box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #1769aa;
         }
 
         textarea {
             height: 100px;
+            resize: vertical;
         }
 
         button {
             padding: 11px 20px;
-            background-color: #0b3d91;
+            background-color: #1769aa;
             color: white;
             border: none;
+            border-radius: 6px;
             cursor: pointer;
             margin-top: 15px;
+            font-size: 14px;
         }
 
+        button:hover {
+            background-color: #0d4f80;
+        }
+
+        /* Same color as Submit Complaint button */
         .location-btn {
-            background-color: green;
+            background-color: #1769aa;
+        }
+
+        .location-btn:hover {
+            background-color: #0d4f80;
+        }
+
+        #locationMessage {
+            color: #1769aa;
+            font-size: 14px;
         }
 
         footer {
-            background-color: #0b3d91;
+            background-color: #1769aa;
             color: white;
             text-align: center;
             padding: 15px;
@@ -126,9 +158,12 @@
 
             <label>Location</label>
 
-            <input type="text" id="location" placeholder="Enter location" required>
+            <input type="text" id="location"
+                   placeholder="Enter location" required>
 
-            <button type="button" class="location-btn" onclick="getLocation()">
+            <button type="button"
+                    class="location-btn"
+                    onclick="getLocation()">
                 Use Current Location
             </button>
 
@@ -147,10 +182,14 @@
 
             <label>Description</label>
 
-            <textarea id="description" placeholder="Describe the problem..." required></textarea>
+            <textarea id="description"
+                      placeholder="Describe the problem..."
+                      required></textarea>
 
 
-            <button type="submit">Submit Complaint</button>
+            <button type="submit">
+                Submit Complaint
+            </button>
 
         </form>
 
@@ -168,21 +207,34 @@
 
             if (navigator.geolocation) {
 
-                navigator.geolocation.getCurrentPosition(function(position) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
 
-                    let latitude = position.coords.latitude;
-                    let longitude = position.coords.longitude;
+                        let latitude =
+                            position.coords.latitude;
 
-                    document.getElementById("location").value =
-                        latitude + ", " + longitude;
+                        let longitude =
+                            position.coords.longitude;
 
-                    document.getElementById("locationMessage").innerHTML =
-                        "Location set successfully.";
+                        document.getElementById("location").value =
+                            latitude + ", " + longitude;
 
-                });
+                        document.getElementById("locationMessage").innerHTML =
+                            "Location set successfully.";
+
+                    },
+                    function() {
+
+                        document.getElementById("locationMessage").innerHTML =
+                            "Unable to get your location.";
+
+                    }
+                );
 
             } else {
+
                 alert("Location is not supported by your browser.");
+
             }
         }
 
@@ -191,15 +243,35 @@
 
             event.preventDefault();
 
-            let complaintId = "RF-" + Math.floor(1000 + Math.random() * 9000);
+            let complaintId =
+                "RF-" + Math.floor(1000 + Math.random() * 9000);
 
             localStorage.setItem("complaintId", complaintId);
-            localStorage.setItem("issue", document.getElementById("issueType").value);
-            localStorage.setItem("location", document.getElementById("location").value);
-            localStorage.setItem("severity", document.getElementById("severity").value);
-            localStorage.setItem("description", document.getElementById("description").value);
 
-            alert("Complaint submitted successfully!\nYour Complaint ID is: " + complaintId);
+            localStorage.setItem(
+                "issue",
+                document.getElementById("issueType").value
+            );
+
+            localStorage.setItem(
+                "location",
+                document.getElementById("location").value
+            );
+
+            localStorage.setItem(
+                "severity",
+                document.getElementById("severity").value
+            );
+
+            localStorage.setItem(
+                "description",
+                document.getElementById("description").value
+            );
+
+            alert(
+                "Complaint submitted successfully!\n" +
+                "Your Complaint ID is: " + complaintId
+            );
 
             window.location.href = "track.html";
         }
@@ -208,3 +280,4 @@
 
 </body>
 </html>
+```
