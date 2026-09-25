@@ -1,143 +1,153 @@
+```html
 <!DOCTYPE html>
-
 <html>
 <head>
     <title>Register - RoadFix AI</title>
 
-```
-<style>
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background-color: #cae0f5;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-    }
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-    header {
-        background-color: #0b3d91;
-        padding: 16px 50px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fb;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #222;
+        }
 
-    header h2 {
-        color: white;
-        margin: 0;
-    }
+        header {
+            background-color: #12315a;
+            padding: 18px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-    nav a {
-        color: white;
-        text-decoration: none;
-        margin-left: 22px;
-        font-size: 15px;
-    }
+        header h2 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 25px;
+        }
 
-    nav a:hover {
-        text-decoration: underline;
-    }
+        nav a {
+            color: #dbeafe;
+            text-decoration: none;
+            margin-left: 22px;
+            font-size: 14px;
+        }
 
-    .container {
-        width: 500px;
-        max-width: 90%;
-        margin: 40px auto;
-        background-color: rgb(246, 209, 209);
-        padding: 30px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
+        nav a:hover {
+            color: #8fd3c7;
+        }
 
-    h2 {
-        color: #0b3d91;
-        text-align: center;
-        margin-top: 0;
-        margin-bottom: 25px;
-    }
+        .container {
+            width: 500px;
+            max-width: 90%;
+            margin: 40px auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid #dbe7f0;
+            box-shadow: 0 8px 24px rgba(18, 49, 90, 0.08);
+        }
 
-    label {
-        display: block;
-        margin-top: 14px;
-        margin-bottom: 6px;
-        font-weight: bold;
-        color: #333;
-    }
+        .container h2 {
+            color: #1769aa;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 25px;
+        }
 
-    input,
-    textarea {
-        width: 100%;
-        padding: 11px;
-        box-sizing: border-box;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        font-size: 14px;
-    }
+        label {
+            display: block;
+            margin-top: 14px;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #34495e;
+            font-size: 14px;
+        }
 
-    input:focus,
-    textarea:focus {
-        outline: none;
-        border-color: #0b3d91;
-    }
+        input,
+        textarea {
+            width: 100%;
+            padding: 11px;
+            box-sizing: border-box;
+            border: 1px solid #ccd9e5;
+            border-radius: 5px;
+            font-size: 14px;
+            outline: none;
+        }
 
-    textarea {
-        height: 75px;
-        resize: none;
-    }
+        input:focus,
+        textarea:focus {
+            border-color: #1769aa;
+        }
 
-    button {
-        width: 100%;
-        padding: 12px;
-        margin-top: 22px;
-        background-color: #0b3d91;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 15px;
-        font-weight: bold;
-    }
+        textarea {
+            height: 75px;
+            resize: none;
+        }
 
-    button:hover {
-        background-color: #092f70;
-    }
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 22px;
+            background-color: #1769aa;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+        }
 
-    .login {
-        text-align: center;
-        margin-top: 20px;
-        color: #555;
-    }
+        button:hover {
+            background-color: #12315a;
+        }
 
-    a {
-        color: #0b3d91;
-        text-decoration: none;
-    }
+        .login {
+            text-align: center;
+            margin-top: 20px;
+            color: #667789;
+            font-size: 14px;
+        }
 
-    #message {
-        font-size: 14px;
-        margin: 5px 0;
-    }
+        a {
+            color: #1769aa;
+            text-decoration: none;
+        }
 
-    footer {
-        background-color: #0b3d91;
-        color: white;
-        text-align: center;
-        padding: 13px;
-        margin-top: auto;
-        font-size: 14px;
-    }
+        a:hover {
+            color: #12315a;
+        }
 
-    footer p {
-        margin: 0;
-    }
-</style>
-```
+        #message {
+            font-size: 14px;
+            margin: 5px 0;
+        }
 
+        footer {
+            background-color: #12315a;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            margin-top: auto;
+            font-size: 13px;
+        }
+
+        footer p {
+            margin: 0;
+            color: #dbeafe;
+        }
+    </style>
 </head>
 
 <body>
 
-```
 <header>
 
     <h2>RoadFix AI</h2>
@@ -258,7 +268,7 @@
     }
 
 </script>
-```
 
 </body>
 </html>
+```

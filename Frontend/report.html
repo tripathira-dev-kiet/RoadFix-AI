@@ -1,85 +1,169 @@
+```html
 <!DOCTYPE html>
 <html>
 <head>
     <title>Report Issue - RoadFix AI</title>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
-            font-family: Arial;
-            background-color: #a1d4f3;
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fb;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            color: #222;
         }
 
         header {
-            background-color: #0b3d91;
-            padding: 15px 50px;
+            background-color: #12315a;
+            padding: 18px 7%;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         header h2 {
-            color: white;
+            color: #ffffff;
             margin: 0;
+            font-size: 25px;
         }
 
         nav a {
-            color: white;
+            color: #dbeafe;
             text-decoration: none;
             margin-left: 20px;
+            font-size: 14px;
+        }
+
+        nav a:hover {
+            color: #8fd3c7;
         }
 
         .container {
             width: 600px;
+            max-width: 90%;
             margin: 40px auto;
-            background-color: rgb(251, 210, 210);
-            padding: 25px;
-            border-radius: 8px;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid #dbe7f0;
+            box-shadow: 0 8px 24px rgba(18, 49, 90, 0.08);
         }
 
-        h2 {
-            color: #0b3d91;
+        .container h2 {
+            color: #1769aa;
+            margin-top: 0;
+        }
+
+        .container p {
+            color: #667789;
+            line-height: 1.5;
         }
 
         label {
             display: block;
-            margin-top: 15px;
-            margin-bottom: 5px;
+            margin-top: 18px;
+            margin-bottom: 7px;
             font-weight: bold;
+            color: #34495e;
+            font-size: 14px;
         }
 
-        input, select, textarea {
+        input,
+        select,
+        textarea {
             width: 100%;
-            padding: 10px;
+            padding: 11px;
             box-sizing: border-box;
+            border: 1px solid #ccd9e5;
+            border-radius: 5px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #1769aa;
         }
 
         textarea {
             height: 100px;
+            resize: vertical;
+        }
+
+        input[type="file"] {
+            background-color: #f8fafc;
         }
 
         button {
             padding: 11px 20px;
-            background-color: #0b3d91;
+            background-color: #1769aa;
             color: white;
             border: none;
             cursor: pointer;
             margin-top: 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #12315a;
         }
 
         .location-btn {
-            background-color: green;
+            background-color: #4aa58c;
+        }
+
+        .location-btn:hover {
+            background-color: #36806d;
+        }
+
+        #locationMessage {
+            color: #16805b;
+            font-size: 13px;
+            margin-top: 8px;
         }
 
         footer {
-            background-color: #0b3d91;
+            background-color: #12315a;
             color: white;
             text-align: center;
             padding: 15px;
             margin-top: auto;
+        }
+
+        footer p {
+            color: #dbeafe;
+            margin: 0;
+            font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+
+            header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            nav {
+                text-align: center;
+            }
+
+            nav a {
+                margin: 0 7px;
+            }
+
+            .container {
+                margin: 25px auto;
+                padding: 22px;
+            }
         }
     </style>
 </head>
@@ -126,9 +210,12 @@
 
             <label>Location</label>
 
-            <input type="text" id="location" placeholder="Enter location" required>
+            <input type="text" id="location"
+                   placeholder="Enter location" required>
 
-            <button type="button" class="location-btn" onclick="getLocation()">
+            <button type="button"
+                    class="location-btn"
+                    onclick="getLocation()">
                 Use Current Location
             </button>
 
@@ -147,7 +234,9 @@
 
             <label>Description</label>
 
-            <textarea id="description" placeholder="Describe the problem..." required></textarea>
+            <textarea id="description"
+                      placeholder="Describe the problem..."
+                      required></textarea>
 
 
             <button type="submit">Submit Complaint</button>
@@ -191,15 +280,31 @@
 
             event.preventDefault();
 
-            let complaintId = "RF-" + Math.floor(1000 + Math.random() * 9000);
+            let complaintId =
+                "RF-" + Math.floor(1000 + Math.random() * 9000);
 
             localStorage.setItem("complaintId", complaintId);
-            localStorage.setItem("issue", document.getElementById("issueType").value);
-            localStorage.setItem("location", document.getElementById("location").value);
-            localStorage.setItem("severity", document.getElementById("severity").value);
-            localStorage.setItem("description", document.getElementById("description").value);
+            localStorage.setItem(
+                "issue",
+                document.getElementById("issueType").value
+            );
+            localStorage.setItem(
+                "location",
+                document.getElementById("location").value
+            );
+            localStorage.setItem(
+                "severity",
+                document.getElementById("severity").value
+            );
+            localStorage.setItem(
+                "description",
+                document.getElementById("description").value
+            );
 
-            alert("Complaint submitted successfully!\nYour Complaint ID is: " + complaintId);
+            alert(
+                "Complaint submitted successfully!\n" +
+                "Your Complaint ID is: " + complaintId
+            );
 
             window.location.href = "track.html";
         }
@@ -208,3 +313,4 @@
 
 </body>
 </html>
+```

@@ -1,74 +1,124 @@
+```html
 <!DOCTYPE html>
 <html>
 <head>
     <title>Login - RoadFix AI</title>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
-            font-family: Arial;
-            background-color: #a5c9e2;
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fb;
+            color: #222;
         }
 
         header {
-            background-color: #0b3d91;
-            padding: 15px 50px;
+            background-color: #12315a;
+            padding: 18px 7%;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         header h2 {
-            color: white;
+            color: #ffffff;
             margin: 0;
+            font-size: 25px;
         }
 
         nav a {
-            color: white;
+            color: #dbeafe;
             text-decoration: none;
             margin-left: 20px;
+            font-size: 14px;
+        }
+
+        nav a:hover {
+            color: #8fd3c7;
         }
 
         .login-box {
             width: 350px;
             margin: 70px auto;
-            background: rgb(245, 206, 206);
-            padding: 25px;
-            border-radius: 8px;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid #dbe7f0;
+            box-shadow: 0 8px 24px rgba(18, 49, 90, 0.08);
         }
 
         .login-box h2 {
             text-align: center;
-            color: #0b3d91;
+            color: #1769aa;
+            margin-bottom: 25px;
+        }
+
+        label {
+            color: #34495e;
+            font-size: 14px;
+            font-weight: bold;
         }
 
         input, select {
             width: 100%;
-            padding: 10px;
+            padding: 11px;
             margin: 8px 0 15px;
+            border: 1px solid #ccd9e5;
+            border-radius: 5px;
             box-sizing: border-box;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: #1769aa;
         }
 
         button {
             width: 100%;
-            padding: 10px;
-            background-color: #0b3d91;
+            padding: 11px;
+            background-color: #1769aa;
             color: white;
             border: none;
+            border-radius: 5px;
             cursor: pointer;
+            font-size: 15px;
+        }
+
+        button:hover {
+            background-color: #12315a;
         }
 
         a {
-            color: #0b3d91;
+            color: #1769aa;
             text-decoration: none;
         }
 
+        a:hover {
+            color: #12315a;
+        }
+
+        .login-box p {
+            color: #667789;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
         footer {
-            background-color: #0b3d91;
+            background-color: #12315a;
             color: white;
             text-align: center;
             padding: 15px;
             margin-top: 50px;
+        }
+
+        footer p {
+            margin: 0;
+            font-size: 13px;
+            color: #dbeafe;
         }
     </style>
 </head>
@@ -146,3 +196,4 @@
 
 </body>
 </html>
+```

@@ -1,20 +1,26 @@
+```html
 <!DOCTYPE html>
 <html>
 <head>
     <title>Track Complaint - RoadFix AI</title>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
-            font-family: Arial;
-            background-color: #7da0bc;
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fb;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            color: #34495e;
         }
 
         header {
-            background-color: #0b3d91;
+            background-color: #12315a;
             padding: 15px 50px;
             display: flex;
             justify-content: space-between;
@@ -27,80 +33,132 @@
         }
 
         nav a {
-            color: white;
+            color: #dbeafe;
             text-decoration: none;
             margin-left: 20px;
+            transition: 0.3s;
+        }
+
+        nav a:hover {
+            color: #8fd3c7;
         }
 
         .container {
             width: 650px;
+            max-width: 92%;
             margin: 40px auto;
         }
 
         .search-box,
         .status-box {
-            background-color: rgb(245, 199, 199);
+            background-color: white;
             padding: 25px;
-            border-radius: 8px;
+            border-radius: 10px;
             margin-bottom: 25px;
+            border: 1px solid #dbe7f0;
+            box-shadow: 0 8px 24px rgba(18, 49, 90, 0.08);
         }
 
         h2 {
-            color: #0b3d91;
+            color: #1769aa;
         }
 
         input {
             width: 70%;
             padding: 10px;
-            box-sizing: border-box;
+            border: 1px solid #ccd9e5;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #1769aa;
         }
 
         button {
             padding: 11px 20px;
-            background-color: #0b3d91;
+            background-color: #1769aa;
             color: white;
             border: none;
+            border-radius: 5px;
             cursor: pointer;
+            transition: 0.3s;
         }
 
         button:hover {
-            background-color: #082f70;
+            background-color: #12315a;
         }
 
         .complaint {
-            border-left: 4px solid #0b3d91;
+            border-left: 4px solid #1769aa;
             padding: 12px 20px;
             margin: 15px 0;
-            background-color: #f5f7fa;
+            background-color: #f4f8fc;
+            border-radius: 0 6px 6px 0;
         }
 
         .status {
-            color: #0b3d91;
+            color: #1769aa;
             font-weight: bold;
         }
 
         #message {
-            color: red;
+            color: #c62828;
+            font-weight: bold;
         }
 
         .feedback-box {
             margin-top: 25px;
             padding: 20px;
-            background-color: #f5f7fa;
+            background-color: #eef7f5;
+            border: 1px solid #c8e5de;
             border-radius: 8px;
             text-align: center;
         }
 
         .feedback-box h3 {
-            color: #0b3d91;
+            color: #1769aa;
         }
 
         footer {
-            background-color: #0b3d91;
+            background-color: #12315a;
             color: white;
             text-align: center;
             padding: 15px;
             margin-top: auto;
+        }
+
+        @media (max-width: 700px) {
+
+            header {
+                padding: 15px 20px;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            nav a {
+                margin-left: 8px;
+                margin-right: 8px;
+            }
+
+            .container {
+                width: 92%;
+                margin: 25px auto;
+            }
+
+            .search-box,
+            .status-box {
+                padding: 20px;
+            }
+
+            input {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            button {
+                width: auto;
+            }
         }
     </style>
 </head>
@@ -340,3 +398,4 @@
 
 </body>
 </html>
+```
