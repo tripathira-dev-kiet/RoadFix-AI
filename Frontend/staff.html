@@ -1,276 +1,310 @@
-```html
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>RoadFix AI - Staff Panel</title>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Operations Panel - RoadFix AI</title>
+    <link rel="stylesheet" href="css/style.css">
     <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f7fb;
-            color: #34495e;
-        }
-
-        header {
-            background: #12315a;
-            color: white;
-            padding: 15px 50px;
+        .staff-header {
+            background: linear-gradient(135deg, #12315a 0%, #1769aa 100%);
+            color: #ffffff;
+            padding: 24px 30px;
+            border-radius: 12px;
+            margin-bottom: 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
-        header h2 {
-            margin: 0;
+        .staff-info h2 {
+            font-size: 22px;
+            margin-bottom: 4px;
         }
 
-        nav a {
+        .staff-info p {
             color: #dbeafe;
-            text-decoration: none;
-            margin-left: 20px;
-            transition: 0.3s;
+            font-size: 14px;
         }
 
-        nav a:hover {
-            color: #8fd3c7;
+        .dept-switcher {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 14px;
+            border-radius: 8px;
         }
 
-        .container {
-            width: 85%;
-            max-width: 1100px;
-            margin: 40px auto;
+        .dept-switcher select {
+            background: #ffffff;
+            color: var(--primary);
+            font-weight: 600;
+            padding: 6px 10px;
         }
 
-        .title {
-            margin-bottom: 25px;
-            color: #1769aa;
+        .task-card {
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            padding: 24px;
+            margin-bottom: 22px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
         }
 
-        .complaint {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            border: 1px solid #dbe7f0;
-            box-shadow: 0 8px 24px rgba(18, 49, 90, 0.08);
-            margin-bottom: 25px;
+        .task-main h3 {
+            color: var(--primary);
+            font-size: 19px;
+            margin-bottom: 8px;
         }
 
-        .complaint h3 {
-            margin-top: 0;
-            color: #1769aa;
+        .task-meta {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
         }
 
-        .details p {
-            margin: 10px 0;
-            line-height: 1.5;
-        }
-
-        .status {
-            display: inline-block;
-            padding: 7px 12px;
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffe69c;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-
-        img {
-            width: 250px;
-            height: 160px;
-            object-fit: cover;
-            margin-top: 10px;
-            border-radius: 6px;
-            border: 1px solid #dbe7f0;
+        .task-meta span {
+            margin-right: 14px;
         }
 
         .resolve-box {
-            margin-top: 25px;
-            border-top: 1px solid #dbe7f0;
-            padding-top: 20px;
-        }
-
-        input[type="file"] {
-            margin: 15px 0;
-            padding: 8px;
             background: #f8fafc;
-            border: 1px solid #ccd9e5;
-            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 18px;
         }
 
-        button {
-            background: #1769aa;
-            color: white;
-            border: none;
-            padding: 10px 18px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: 0.3s;
+        .resolve-box h4 {
+            color: var(--primary);
+            font-size: 15px;
+            margin-bottom: 10px;
         }
 
-        button:hover {
-            background: #12315a;
-        }
-
-        #message {
-            color: #2e7d32;
-            font-weight: bold;
-        }
-
-        footer {
-            background: #12315a;
-            color: white;
+        .task-photo {
             text-align: center;
-            padding: 15px;
-            margin-top: 50px;
         }
 
-        @media (max-width: 700px) {
+        .task-photo img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
 
-            header {
-                padding: 15px 20px;
-                flex-direction: column;
-                gap: 12px;
-            }
-
-            nav a {
-                margin-left: 10px;
-                margin-right: 10px;
-            }
-
-            .container {
-                width: 92%;
-                margin: 25px auto;
-            }
-
-            .complaint {
-                padding: 20px;
-            }
-
-            img {
-                width: 100%;
-                max-width: 250px;
+        @media (max-width: 800px) {
+            .task-card {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
-
 <body>
 
-<header>
-    <h2>RoadFix AI</h2>
+    <header>
+        <a href="index.html" class="logo-container">
+            <div class="logo">RoadFix<span>AI</span></div>
+            <span class="logo-tag">Staff Operations</span>
+        </a>
+        <nav id="mainNav"></nav>
+    </header>
 
-    <nav>
-        <a href="index.html">Home</a>
-        <a href="login.html">Logout</a>
-    </nav>
-</header>
-
-<div class="container">
-
-    <h1 class="title">Staff Panel</h1>
-
-    <div class="complaint">
-
-        <h3>Assigned Complaint</h3>
-
-        <div class="details">
-            <p><b>Complaint ID:</b> <span id="complaintId">Loading...</span></p>
-
-            <p><b>Issue:</b> <span id="issue">Loading...</span></p>
-
-            <p><b>Location:</b> <span id="location">Loading...</span></p>
-
-            <p><b>Severity:</b> <span id="severity">Loading...</span></p>
-
-            <p><b>Description:</b> <span id="description">Loading...</span></p>
-
-            <p><b>Status:</b> <span class="status" id="status">Assigned</span></p>
+    <div class="container">
+        
+        <!-- Staff Banner & Department Switcher -->
+        <div class="staff-header">
+            <div class="staff-info">
+                <h2 id="staffName">Inspector Rajesh Kumar</h2>
+                <p id="staffRoleDept">Municipal Department: <b id="currentDeptLabel">Roads & Infrastructure</b></p>
+            </div>
+            <div class="dept-switcher">
+                <label style="color:white; margin:0; font-size:13px;">View Department Tasks:</label>
+                <select id="departmentSelect" onchange="loadDepartmentTasks()">
+                    <option value="Roads & Infrastructure" selected>Roads & Infrastructure</option>
+                    <option value="Sanitation & Waste">Sanitation & Waste</option>
+                    <option value="Electrical & Lighting">Electrical & Lighting</option>
+                    <option value="Water Supply & Drainage">Water Supply & Drainage</option>
+                    <option value="">All Departments</option>
+                </select>
+            </div>
         </div>
 
-        <div>
-            <p><b>Complaint Photo:</b></p>
-            <img id="complaintPhoto" src="" alt="Complaint Photo">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+            <h2 style="font-size:20px; color:var(--primary);">Assigned Field Work Orders</h2>
+            <button onclick="loadDepartmentTasks()" class="btn btn-secondary btn-sm">🔄 Refresh Tasks</button>
         </div>
 
-        <div class="resolve-box">
-
-            <h3>Resolve Complaint</h3>
-
-            <p>Repair complete hone ke baad proof photo upload karein:</p>
-
-            <input type="file" id="repairPhoto" accept="image/*">
-
-            <br>
-
-            <button onclick="resolveComplaint()">
-                Mark as Resolved
-            </button>
-
-            <p id="message"></p>
-
-            <div id="repairPhotoBox"></div>
-
+        <!-- Task List Container -->
+        <div id="taskList">
+            <div class="card-box" style="text-align:center; padding:40px;">
+                📡 Loading assigned work orders from municipal database...
+            </div>
         </div>
 
     </div>
 
-</div>
+    <footer>
+        <div class="copyright">
+            © 2026 RoadFix AI | Civic Issue Reporting & Tracking Platform | KIET
+        </div>
+    </footer>
 
-<footer>
-    <p>© 2026 RoadFix AI - Civic Issue Reporting & Tracking Platform</p>
-</footer>
+    <script src="js/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!RoadFix.requireAuth('STAFF', '👷 Field Staff Login Required: Please sign in with field operations staff credentials.')) return;
+            loadDepartmentTasks();
+        });
 
-<script>
+        async function loadDepartmentTasks() {
+            const dept = document.getElementById('departmentSelect').value;
+            document.getElementById('currentDeptLabel').innerText = dept || 'All Departments';
+            const container = document.getElementById('taskList');
+            container.innerHTML = '<div class="card-box" style="text-align:center; padding:30px;">Loading tasks...</div>';
 
-    let complaintId = localStorage.getItem("complaintId");
-    let issue = localStorage.getItem("issue");
-    let locationData = localStorage.getItem("location");
-    let severity = localStorage.getItem("severity");
-    let description = localStorage.getItem("description");
+            try {
+                const [allIssues, allFeedbacks] = await Promise.all([RoadFix.getComplaints(), RoadFix.getFeedbacks()]);
+                const issues = dept ? allIssues.filter(i => (i.department && i.department.includes(dept))) : allIssues;
 
-    document.getElementById("complaintId").innerText = complaintId || "No Complaint";
-    document.getElementById("issue").innerText = issue || "Not Available";
-    document.getElementById("location").innerText = locationData || "Not Available";
-    document.getElementById("severity").innerText = severity || "Not Available";
-    document.getElementById("description").innerText = description || "Not Available";
+                if (!issues || issues.length === 0) {
+                    container.innerHTML = `
+                        <div class="card-box" style="text-align:center; padding:40px; color:var(--text-muted);">
+                            ✅ No pending work orders for this department. All clear!
+                        </div>
+                    `;
+                    return;
+                }
 
-    function resolveComplaint() {
+                container.innerHTML = issues.map(issue => {
+                    const fb = allFeedbacks.find(f => f.complaintId && f.complaintId.toUpperCase() === issue.id.toUpperCase());
+                    return `
+                    <div class="task-card" id="task-${issue.id}">
+                        <div class="task-main">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span class="badge badge-${issue.status}">${(issue.status || 'SUBMITTED').replace('_', ' ')}</span>
+                                <span class="sev-${issue.severity || 'Medium'}">${issue.severity || 'Medium'} Priority</span>
+                            </div>
+                            <h3>${issue.title}</h3>
+                            <div class="task-meta">
+                                <span><b>ID:</b> ${issue.id}</span>
+                                <span><b>Category:</b> ${issue.category}</span>
+                                <span><b>Reported:</b> ${issue.date || 'Recent'}</span>
+                            </div>
+                            <p style="color:#475569; font-size:14px; margin-bottom:12px;"><b>Location:</b> ${issue.location}</p>
+                            <p style="color:#64748b; font-size:14px; line-height:1.5;">${issue.description}</p>
 
-        let file = document.getElementById("repairPhoto").files[0];
+                            <!-- Actions -->
+                            ${issue.status !== 'RESOLVED' ? `
+                                <div style="margin-top:16px;">
+                                    ${issue.status !== 'IN_PROGRESS' ? `
+                                        <button onclick="startWork('${issue.id}')" class="btn btn-primary btn-sm" style="margin-right:8px;">
+                                            ▶️ Start Repair Work (Set In-Progress)
+                                        </button>
+                                    ` : `
+                                        <span style="color:#ea580c; font-weight:bold; font-size:13px; margin-right:12px;">
+                                            ⚙️ Repair Work is currently In Progress
+                                        </span>
+                                    `}
+                                </div>
 
-        if (!file) {
-            alert("Please upload repair photo first.");
-            return;
+                                <!-- Resolve Form -->
+                                <div class="resolve-box">
+                                    <h4>🛠️ Submit Repair Completion Proof</h4>
+                                    <form onsubmit="handleResolveSubmit(event, '${issue.id}')">
+                                        <label>Completion Notes & Work Summary *</label>
+                                        <textarea id="notes-${issue.id}" placeholder="e.g. Excavated hole, compacted base with gravel, rolled hot-mix asphalt flush with road." required></textarea>
+
+                                        <label>Materials Used & Equipment</label>
+                                        <input type="text" id="materials-${issue.id}" placeholder="e.g. 1.2 tonnes bitumen, compaction roller" value="1.2 tonnes bitumen, compaction roller">
+
+                                        <label>Upload Work Completion Photo (Proof)</label>
+                                        <input type="file" id="repairPhoto-${issue.id}" accept="image/*" style="padding:6px; font-size:13px; background:#fff;">
+
+                                        <button type="submit" class="btn btn-accent btn-block" style="margin-top:14px;">
+                                            ✅ Mark as Resolved & Submit Proof
+                                        </button>
+                                    </form>
+                                </div>
+                            ` : `
+                                <div style="margin-top:16px; background:#dcfce7; color:#15803d; padding:12px; border-radius:6px; font-weight:600; font-size:14px;">
+                                    ✅ Issue Marked as Resolved. Repair proof verified.
+                                    <p style="font-size:13px; font-weight:normal; margin-top:4px;">${issue.repairNotes || 'Completed.'}</p>
+                                    ${issue.repairPhotoUrl ? `<img src="${issue.repairPhotoUrl}" onerror="this.src='https://images.unsplash.com/photo-1508873696983-2df570464753?auto=format&fit=crop&w=800&q=80'" style="max-width:100%; max-height:160px; border-radius:6px; margin-top:8px; border:1px solid #86efac; object-fit:cover;">` : ''}
+                                </div>
+
+                                ${fb ? `
+                                    <div style="margin-top:12px; background:#fefce8; border:1px solid #fef08a; padding:12px; border-radius:6px; font-size:13px; color:#713f12;">
+                                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                                            <b>⭐ Citizen Review & Satisfaction Feedback:</b>
+                                            <span style="color:#eab308; font-size:15px; font-weight:bold;">${'★'.repeat(fb.rating || 5)}</span>
+                                        </div>
+                                        <p style="margin:6px 0; font-style:italic;">"${fb.comments || fb.comment || 'Good repair work.'}"</p>
+                                        <div style="font-size:11px; color:#a16207;">By: <b>${fb.citizenName || 'Citizen'}</b> | Rating: <b>${fb.resolutionSpeed || 'Rapid'}</b></div>
+                                    </div>
+                                ` : ''}
+                            `}
+                        </div>
+
+                        <div class="task-photo">
+                            <p style="font-weight:600; font-size:13px; color:var(--text-muted); margin-bottom:6px;">Citizen Reported Photo</p>
+                            <img src="${issue.photoUrl || 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80'}" onerror="this.src='https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80'" alt="Issue photo" style="width:100%; height:180px; object-fit:cover; border-radius:6px; border:1px solid #cbd5e1;">
+                            
+                            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:10px; margin-top:10px; font-size:12px; text-align:left;">
+                                <div style="font-weight:700; color:#1e293b;">🤖 AI Vision Assessment:</div>
+                                <div><b>Detected:</b> ${issue.aiDetected || issue.category} (<span style="color:#059669; font-weight:700;">${issue.aiConfidence || '95%'}</span>)</div>
+                                <div style="color:#64748b; margin-top:4px;">${issue.aiHazard || 'Hazard flagged.'}</div>
+                            </div>
+
+                            <div style="margin-top:10px;">
+                                <a href="track.html?id=${encodeURIComponent(issue.id)}" target="_blank" class="btn btn-secondary btn-sm" style="width:100%;">
+                                    🔍 View Live Tracking View
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;}).join('');
+
+            } catch (err) {
+                container.innerHTML = `<div class="card-box" style="color:red; text-align:center;">Error loading tasks: ${err.message}</div>`;
+            }
         }
 
-        let reader = new FileReader();
+        async function startWork(issueId) {
+            await RoadFix.updateComplaint(issueId, { status: 'IN_PROGRESS' });
+            loadDepartmentTasks();
+        }
 
-        reader.onload = function(e) {
+        async function handleResolveSubmit(e, issueId) {
+            e.preventDefault();
+            const notes = document.getElementById(`notes-${issueId}`).value.trim();
+            const materials = document.getElementById(`materials-${issueId}`).value.trim();
+            const fileInput = document.getElementById(`repairPhoto-${issueId}`);
 
-            localStorage.setItem("repairPhoto", e.target.result);
-            localStorage.setItem("status", "Resolved");
+            let repairPhotoUrl = "https://images.unsplash.com/photo-1508873696983-2df570464753?auto=format&fit=crop&w=800&q=80";
+            if (fileInput && fileInput.files && fileInput.files[0]) {
+                try {
+                    repairPhotoUrl = await RoadFix.compressImage(fileInput.files[0], 1024, 768, 0.75);
+                } catch (err) {
+                    console.warn("Could not compress repair photo", err);
+                }
+            }
 
-            document.getElementById("status").innerText = "Resolved";
+            await RoadFix.updateComplaint(issueId, {
+                status: 'RESOLVED',
+                repairNotes: `${notes} (Materials: ${materials})`,
+                repairPhotoUrl: repairPhotoUrl
+            });
 
-            document.getElementById("message").innerText =
-                "Complaint resolved successfully. Repair photo uploaded.";
-
-            document.getElementById("repairPhotoBox").innerHTML =
-                "<p><b>Repair Proof Photo:</b></p>" +
-                "<img src='" + e.target.result + "'>";
-        };
-
-        reader.readAsDataURL(file);
-    }
-
-</script>
-
+            alert('Complaint resolved successfully! Work proof saved.');
+            loadDepartmentTasks();
+        }
+    </script>
 </body>
 </html>
-```

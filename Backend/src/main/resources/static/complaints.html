@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Public Civic Complaints Explorer - RoadFix AI</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .filter-bar {
+            background: #ffffff;
+            padding: 20px 24px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+
+        .filter-bar select, .filter-bar input {
+            padding: 9px 12px;
+            font-size: 13px;
+        }
+
+        .complaints-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 22px;
+        }
+
+        .c-card {
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .c-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .c-card-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .c-card-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .c-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .c-card-title {
+            font-size: 17px;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .c-card-location {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .c-card-desc {
+            font-size: 13px;
+            color: #475569;
+            line-height: 1.5;
+            margin-bottom: 14px;
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="logo-container">
+            <div class="logo">RoadFix<span>AI</span></div>
+            <span class="logo-tag">Public Complaints</span>
+        </a>
+        <nav id="mainNav"></nav>
+    </header>
+
+    <div class="container">
+        
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+            <div>
+                <h1 style="color:var(--primary); font-size:26px;">Community Civic Complaints Explorer</h1>
+                <p style="color:var(--text-muted); font-size:14px;">Explore public infrastructure issues reported across your municipality.</p>
+            </div>
+            <a href="report.html" class="btn btn-primary">📸 Report New Issue</a>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <label style="margin:0; font-size:13px; color:var(--text-muted);">Status:</label>
+                <select id="statusFilter" onchange="filterCards()">
+                    <option value="ALL">All Statuses</option>
+                    <option value="SUBMITTED">Submitted</option>
+                    <option value="VERIFIED">Verified</option>
+                    <option value="ASSIGNED">Assigned</option>
+                    <option value="IN_PROGRESS">In Progress</option>
+                    <option value="RESOLVED">Resolved</option>
+                </select>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:8px;">
+                <label style="margin:0; font-size:13px; color:var(--text-muted);">Category:</label>
+                <select id="categoryFilter" onchange="filterCards()">
+                    <option value="ALL">All Categories</option>
+                    <option value="POTHOLE">Pothole</option>
+                    <option value="DRAINAGE">Drainage Problem</option>
+                    <option value="STREETLIGHT">Street Light</option>
+                    <option value="GARBAGE">Garbage</option>
+                    <option value="WATER_LEAKAGE">Water Leakage</option>
+                    <option value="ROAD_CRACK">Road Damage / Crack</option>
+                </select>
+            </div>
+
+            <div style="flex:1;">
+                <input type="text" id="searchFilter" oninput="filterCards()" placeholder="Search by landmark, description, or ID...">
+            </div>
+        </div>
+
+        <div id="resultsCount" style="margin-bottom:14px; font-size:14px; color:var(--text-muted); font-weight:600;">
+            Loading community complaints...
+        </div>
+
+        <!-- Complaints Cards Grid -->
+        <div class="complaints-cards-grid" id="cardsGrid"></div>
+
+    </div>
+
+    <footer>
+        <div class="copyright">
+            © 2026 RoadFix AI | Civic Issue Reporting & Tracking Platform | KIET
+        </div>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script>
+        let allIssues = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            allIssues = await RoadFix.getComplaints();
+            renderCards(allIssues);
+        });
+
+        function filterCards() {
+            const status = document.getElementById('statusFilter').value;
+            const category = document.getElementById('categoryFilter').value;
+            const q = document.getElementById('searchFilter').value.toLowerCase().trim();
+
+            const filtered = allIssues.filter(item => {
+                const matchStatus = (status === 'ALL' || item.status === status);
+                const matchCategory = (category === 'ALL' || (item.category && item.category.toUpperCase().includes(category)));
+                const matchQuery = (!q ||
+                    (item.id && item.id.toLowerCase().includes(q)) ||
+                    (item.title && item.title.toLowerCase().includes(q)) ||
+                    (item.location && item.location.toLowerCase().includes(q)) ||
+                    (item.description && item.description.toLowerCase().includes(q))
+                );
+                return matchStatus && matchCategory && matchQuery;
+            });
+
+            renderCards(filtered);
+        }
+
+        function renderCards(issues) {
+            const grid = document.getElementById('cardsGrid');
+            document.getElementById('resultsCount').innerText = `Showing ${issues.length} community issue${issues.length === 1 ? '' : 's'}`;
+
+            if (issues.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align:center; padding:40px; color:var(--text-muted); background:white; border-radius:10px;">
+                        No complaints match your filter criteria.
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = issues.map(c => `
+                <div class="c-card">
+                    <img class="c-card-img" src="${c.photoUrl || 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80'}" alt="${c.title}">
+                    <div class="c-card-body">
+                        <div class="c-card-header">
+                            <span class="badge badge-${c.status}">${(c.status || 'SUBMITTED').replace('_', ' ')}</span>
+                            <span class="sev-${c.severity || 'Medium'}">${c.severity || 'Medium'}</span>
+                        </div>
+                        <h3 class="c-card-title">${c.title}</h3>
+                        <div class="c-card-location">📍 ${c.location}</div>
+                        <p class="c-card-desc">${c.description && c.description.length > 110 ? c.description.substring(0, 110) + '...' : (c.description || '')}</p>
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid #f1f5f9;">
+                            <span style="font-size:12px; color:#64748b; font-weight:600;">${c.id}</span>
+                            <a href="track.html?id=${encodeURIComponent(c.id)}" class="btn btn-primary btn-sm">
+                                🔍 Track Status
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>

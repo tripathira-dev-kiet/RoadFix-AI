@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Complaint - RoadFix AI</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .track-container {
+            width: 850px;
+            max-width: 94%;
+            margin: 35px auto;
+        }
+
+        .search-box {
+            background: #ffffff;
+            padding: 28px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 25px;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .search-form input {
+            flex: 1;
+            font-size: 16px;
+        }
+
+        /* 5-Step Timeline */
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin: 35px 0 25px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 18px;
+            left: 25px;
+            right: 25px;
+            height: 4px;
+            background: #e2e8f0;
+            z-index: 1;
+        }
+
+        .timeline-step {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            width: 18%;
+        }
+
+        .step-circle {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 3px solid #cbd5e1;
+            color: #64748b;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .step-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .timeline-step.active .step-circle {
+            border-color: var(--primary-light);
+            background: var(--primary-light);
+            color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(23, 105, 170, 0.2);
+        }
+
+        .timeline-step.completed .step-circle {
+            border-color: #16a34a;
+            background: #16a34a;
+            color: #ffffff;
+        }
+
+        .timeline-step.active .step-label,
+        .timeline-step.completed .step-label {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* Details Card */
+        .details-card {
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-md);
+            padding: 28px;
+            margin-bottom: 25px;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 18px;
+        }
+
+        .detail-row {
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .detail-row b {
+            color: #334155;
+            display: inline-block;
+            width: 140px;
+        }
+
+        .photo-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f8fafc;
+            text-align: center;
+        }
+
+        .photo-card img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+        }
+
+        .photo-card p {
+            padding: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        /* Work Proof Card */
+        .proof-box {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 25px;
+        }
+
+        .proof-box h3 {
+            color: #15803d;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @media (max-width: 700px) {
+            .timeline {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .timeline::before {
+                display: none;
+            }
+            .timeline-step {
+                width: 100%;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                text-align: left;
+            }
+            .step-circle {
+                margin: 0;
+            }
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+            .search-form {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="logo-container">
+            <div class="logo">RoadFix<span>AI</span></div>
+            <span class="logo-tag">Live Tracker</span>
+        </a>
+        <nav id="mainNav"></nav>
+    </header>
+
+    <div class="container track-container">
+        <!-- Search Box -->
+        <div class="search-box">
+            <h2 style="color:var(--primary); font-size:22px;">🔍 Track Civic Complaint</h2>
+            <p style="color:var(--text-muted); font-size:14px; margin-top:4px;">
+                Enter your unique Tracking ID to monitor review, crew assignment, and completion proof.
+            </p>
+            <form onsubmit="handleTrack(event)" class="search-form">
+                <input type="text" id="trackingInput" placeholder="Enter Tracking ID (e.g. RF-20260901-001)" required>
+                <button type="submit" id="trackBtn" class="btn btn-primary">Track Progress</button>
+            </form>
+            <div id="searchMsg" style="margin-top:10px; font-size:13px; font-weight:600;"></div>
+        </div>
+
+        <!-- Result Container -->
+        <div id="resultContainer" style="display: none;">
+            
+            <!-- 5-Stage Timeline -->
+            <div class="card-box" style="padding:20px;">
+                <h3 style="font-size:16px; color:var(--primary); margin-bottom:12px;">Timeline Status</h3>
+                <div class="timeline" id="statusTimeline">
+                    <div class="timeline-step" id="step-SUBMITTED">
+                        <div class="step-circle">1</div>
+                        <div class="step-label">Submitted</div>
+                    </div>
+                    <div class="timeline-step" id="step-VERIFIED">
+                        <div class="step-circle">2</div>
+                        <div class="step-label">Reviewed</div>
+                    </div>
+                    <div class="timeline-step" id="step-ASSIGNED">
+                        <div class="step-circle">3</div>
+                        <div class="step-label">Assigned</div>
+                    </div>
+                    <div class="timeline-step" id="step-IN_PROGRESS">
+                        <div class="step-circle">4</div>
+                        <div class="step-label">In Progress</div>
+                    </div>
+                    <div class="timeline-step" id="step-RESOLVED">
+                        <div class="step-circle">5</div>
+                        <div class="step-label">Resolved</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Complaint Details Card -->
+            <div class="details-card">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px; border-bottom:1px solid var(--border-color); padding-bottom:15px;">
+                    <div>
+                        <span class="badge" id="cStatusBadge">SUBMITTED</span>
+                        <h2 style="color:var(--primary); font-size:22px; margin-top:6px;" id="cTitle">Complaint Title</h2>
+                        <div style="color:var(--text-muted); font-size:13px;" id="cTracking">ID: RF-XXXXX</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <span id="cPriorityBadge" class="badge">MEDIUM</span>
+                        <div style="font-size:13px; color:var(--text-muted); margin-top:4px;" id="cDate">Reported Date</div>
+                    </div>
+                </div>
+
+                <div class="details-grid">
+                    <div>
+                        <div class="detail-row"><b>Category:</b> <span id="cCategory">Pothole</span></div>
+                        <div class="detail-row"><b>Location:</b> <span id="cLocation">Address</span></div>
+                        <div class="detail-row"><b>Coordinates:</b> <span id="cCoords">--</span></div>
+                        <div class="detail-row"><b>Assigned Dept:</b> <span id="cDepartment" style="font-weight:600; color:var(--primary-light);">Pending Review</span></div>
+                        <div class="detail-row" style="margin-top:14px;">
+                            <b>Description:</b>
+                            <p id="cDesc" style="color:#475569; margin-top:4px; line-height:1.5;"></p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="photo-card">
+                            <img id="cPhoto" src="" onerror="this.src='https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80'" alt="Citizen reported road hazard">
+                            <p>📸 Citizen Reported Image</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Inspection Assessment Section -->
+                <div id="aiSection" style="margin-top:20px; background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; padding:16px;">
+                    <h4 style="color:#0369a1; font-size:14px; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+                        🤖 RoadFix AI Safety Inspection Assessment
+                    </h4>
+                    <div style="font-size:13px; color:#0c4a6e;">
+                        <span id="aiClassification" style="font-weight:bold;">Surface Hazard</span>
+                        <span id="aiConfidence" style="background:#e0f2fe; padding:2px 8px; border-radius:12px; margin-left:8px; font-weight:bold;">95% Confidence</span>
+                    </div>
+                    <p id="aiNotes" style="font-size:13px; color:#334155; margin-top:6px; line-height:1.4;"></p>
+                </div>
+
+                <!-- Post-Resolution Work Proof Box (Shown when resolved) -->
+                <div id="proofBox" class="proof-box" style="display: none;">
+                    <h3>✅ Municipal Repair Operations Completed & Verified</h3>
+                    <div class="details-grid">
+                        <div>
+                            <div class="detail-row"><b>Supervising Officer:</b> <span id="proofOfficer">--</span></div>
+                            <div class="detail-row"><b>Department:</b> <span id="proofDept">--</span></div>
+                            <div class="detail-row"><b>Materials Used:</b> <span id="proofMaterials">--</span></div>
+                            <div class="detail-row"><b>Resolution Time:</b> <span id="proofTime">--</span></div>
+                            <div class="detail-row" style="margin-top:10px;">
+                                <b>Work Summary:</b>
+                                <p id="proofNotes" style="color:#1e293b; margin-top:4px;"></p>
+                            </div>
+                            <div style="margin-top:20px;">
+                                <a id="feedbackBtn" href="feedback.html" class="btn btn-accent">⭐ Rate This Repair Service</a>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="photo-card" style="border-color:#bbf7d0;">
+                                <img id="proofPhoto" src="" onerror="this.src='https://images.unsplash.com/photo-1508873696983-2df570464753?auto=format&fit=crop&w=800&q=80'" alt="After Repair Proof Photo">
+                                <p style="color:#15803d;">🛠️ Post-Repair Completion Proof Photo</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="copyright">
+            © 2026 RoadFix AI | Civic Issue Reporting & Tracking Platform | KIET
+        </div>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script>
+        async function fetchAndRenderComplaint(trackingId) {
+            const msg = document.getElementById('searchMsg');
+            const resultBox = document.getElementById('resultContainer');
+            msg.innerHTML = '<span style="color:var(--primary-light);">📡 Fetching complaint record...</span>';
+
+            const issue = await RoadFix.getComplaintById(trackingId);
+
+            if (!issue) {
+                msg.innerHTML = `<span style="color:#dc2626;">❌ Complaint with ID "${trackingId}" not found. Try RF-101, RF-102 or submit a new report.</span>`;
+                resultBox.style.display = 'none';
+                return;
+            }
+
+            msg.innerHTML = '';
+            resultBox.style.display = 'block';
+
+            // Fill Header & Meta
+            document.getElementById('cTitle').innerText = issue.title;
+            document.getElementById('cTracking').innerText = `Tracking ID: ${issue.id}`;
+            document.getElementById('cCategory').innerText = issue.category;
+            document.getElementById('cLocation').innerText = issue.location;
+            document.getElementById('cCoords').innerText = issue.location;
+            document.getElementById('cDepartment').innerText = issue.department || 'Pending Assignment';
+            document.getElementById('cDesc').innerText = issue.description;
+            document.getElementById('cDate').innerText = `Reported: ${issue.date || 'Recently'}`;
+
+            // Status Badge
+            const sBadge = document.getElementById('cStatusBadge');
+            sBadge.className = `badge badge-${issue.status}`;
+            sBadge.innerText = (issue.status || 'SUBMITTED').replace('_', ' ');
+
+            // Priority Badge
+            const pBadge = document.getElementById('cPriorityBadge');
+            pBadge.className = `badge sev-${issue.severity || 'Medium'}`;
+            pBadge.innerText = `${issue.severity || 'Medium'} Severity`;
+
+            // Photo
+            document.getElementById('cPhoto').src = issue.photoUrl || 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80';
+
+            // AI Section
+            document.getElementById('aiClassification').innerText = issue.aiDetected || `AI Analysis: ${issue.category}`;
+            document.getElementById('aiConfidence').innerText = `${issue.aiConfidence || '96.2%'} AI Confidence`;
+            document.getElementById('aiNotes').innerText = issue.aiHazard || `AI Safety Hazard: Road condition demands municipal field repair.`;
+            document.getElementById('aiSection').style.display = 'block';
+
+            // Update Timeline steps
+            updateTimeline(issue.status);
+
+            // Work Proof if resolved
+            const proofBox = document.getElementById('proofBox');
+            if (issue.status === 'RESOLVED') {
+                document.getElementById('proofOfficer').innerText = 'Field Operations Inspector';
+                document.getElementById('proofDept').innerText = issue.department || 'Roads & Infrastructure';
+                document.getElementById('proofMaterials').innerText = 'Standard bitumen compound, cold-mix asphalt, gravel base';
+                document.getElementById('proofTime').innerText = 'Verified & Closed';
+                document.getElementById('proofNotes').innerText = issue.repairNotes || 'Excavation completed, asphalt laid and leveled flush with road surface.';
+                document.getElementById('proofPhoto').src = issue.repairPhotoUrl || 'https://images.unsplash.com/photo-1508873696983-2df570464753?auto=format&fit=crop&w=800&q=80';
+                document.getElementById('feedbackBtn').href = `feedback.html?id=${encodeURIComponent(issue.id)}`;
+                proofBox.style.display = 'block';
+            } else {
+                proofBox.style.display = 'none';
+            }
+
+            // Smooth scroll to results
+            resultBox.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function updateTimeline(status) {
+            const steps = ['SUBMITTED', 'VERIFIED', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED'];
+            const statusOrder = {
+                'SUBMITTED': 0,
+                'VERIFIED': 1,
+                'ASSIGNED': 2,
+                'IN_PROGRESS': 3,
+                'RESOLVED': 4,
+                'REJECTED': 0
+            };
+
+            const currentIndex = statusOrder[status] !== undefined ? statusOrder[status] : 0;
+
+            steps.forEach((stepName, idx) => {
+                const el = document.getElementById(`step-${stepName}`);
+                if (!el) return;
+                el.className = 'timeline-step';
+                if (idx < currentIndex) {
+                    el.classList.add('completed');
+                } else if (idx === currentIndex) {
+                    el.classList.add('active');
+                }
+            });
+        }
+
+        function handleTrack(e) {
+            e.preventDefault();
+            const id = document.getElementById('trackingInput').value.trim();
+            if (id) {
+                fetchAndRenderComplaint(id);
+            }
+        }
+
+        // On Page Load: Check URL parameter or localStorage
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const queryId = params.get('id');
+            const storedId = localStorage.getItem('lastComplaintId');
+
+            if (queryId) {
+                document.getElementById('trackingInput').value = queryId;
+                fetchAndRenderComplaint(queryId);
+            } else if (storedId) {
+                document.getElementById('trackingInput').value = storedId;
+                fetchAndRenderComplaint(storedId);
+            }
+        });
+    </script>
+</body>
+</html>

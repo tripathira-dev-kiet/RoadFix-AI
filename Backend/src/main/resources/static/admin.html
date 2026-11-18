@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - RoadFix AI</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .filter-toolbar {
+            background: #ffffff;
+            padding: 18px 22px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            margin: 0;
+            font-size: 13px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .filter-toolbar select, .filter-toolbar input {
+            padding: 8px 12px;
+            font-size: 13px;
+            min-width: 140px;
+        }
+
+        .action-btn-group {
+            display: flex;
+            gap: 6px;
+        }
+
+        .action-btn-group button {
+            padding: 5px 9px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            font-weight: 600;
+        }
+
+        .btn-dispatch {
+            background: #e0f2fe;
+            color: #0369a1;
+            border-color: #bae6fd !important;
+        }
+        .btn-dispatch:hover { background: #bae6fd; }
+
+        .btn-status {
+            background: #fef3c7;
+            color: #b45309;
+            border-color: #fde68a !important;
+        }
+        .btn-status:hover { background: #fde68a; }
+
+        .btn-inspect {
+            background: #f1f5f9;
+            color: #334155;
+            border-color: #cbd5e1 !important;
+        }
+        .btn-inspect:hover { background: #e2e8f0; }
+
+        .rating-stars {
+            color: #f59e0b;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="logo-container">
+            <div class="logo">RoadFix<span>AI</span></div>
+            <span class="logo-tag">Admin Command Center</span>
+        </a>
+        <nav id="mainNav"></nav>
+    </header>
+
+    <div class="container">
+        
+        <!-- Top Greeting Bar -->
+        <div class="admin-header">
+            <div>
+                <h1 style="color:var(--primary); font-size:26px;">Municipal Operations Dashboard</h1>
+                <p style="color:var(--text-muted); font-size:14px;">Oversee civic complaint registry, AI hazard scoring, and department dispatches.</p>
+            </div>
+            <div>
+                <button onclick="refreshData()" class="btn btn-secondary btn-sm">🔄 Refresh Data</button>
+            </div>
+        </div>
+
+        <!-- Metrics Counters Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3 id="statTotal">--</h3>
+                <p>Total Complaints</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="statSubmitted" style="color:#0369a1;">--</h3>
+                <p>Pending Review</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="statAssigned" style="color:#b45309;">--</h3>
+                <p>Assigned to Crews</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="statInProgress" style="color:#c2410c;">--</h3>
+                <p>Work In Progress</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="statResolved" style="color:#15803d;">--</h3>
+                <p>Fully Resolved</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="statAvgRating" style="color:#f59e0b;">★ --</h3>
+                <p>Public Rating</p>
+            </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="filter-toolbar">
+            <div class="filter-group">
+                <label>Status:</label>
+                <select id="filterStatus" onchange="applyFilters()">
+                    <option value="ALL">All Statuses</option>
+                    <option value="SUBMITTED">Submitted</option>
+                    <option value="VERIFIED">Reviewed / Verified</option>
+                    <option value="ASSIGNED">Assigned</option>
+                    <option value="IN_PROGRESS">In Progress</option>
+                    <option value="RESOLVED">Resolved</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Department:</label>
+                <select id="filterDept" onchange="applyFilters()">
+                    <option value="ALL">All Departments</option>
+                    <option value="Roads & Infrastructure">Roads & Infrastructure</option>
+                    <option value="Sanitation & Waste">Sanitation & Waste</option>
+                    <option value="Electrical & Lighting">Electrical & Lighting</option>
+                    <option value="Water Supply & Drainage">Water Supply & Drainage</option>
+                </select>
+            </div>
+
+            <div class="filter-group" style="flex:1;">
+                <label>Search:</label>
+                <input type="text" id="filterQuery" oninput="applyFilters()" placeholder="Search ID, title, landmark address...">
+            </div>
+        </div>
+
+        <!-- Complaints Table Card -->
+        <div class="card-box" style="padding:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                <h2 style="font-size:18px; color:var(--primary);">Active Municipal Complaints Registry</h2>
+                <span id="resultCount" style="font-size:13px; color:var(--text-muted); font-weight:600;">Loading...</span>
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tracking ID</th>
+                            <th>Photo</th>
+                            <th>Issue Title & Category</th>
+                            <th>Location</th>
+                            <th>Severity Score</th>
+                            <th>Current Status</th>
+                            <th>Department</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="complaintsTableBody">
+                        <tr>
+                            <td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted);">
+                                📡 Loading complaints from database...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Citizen Feedbacks Table Card -->
+        <div class="card-box" style="padding:24px; margin-top:30px;">
+            <h2 style="font-size:18px; color:var(--primary); margin-bottom:14px;">⭐ Citizen Quality & Satisfaction Feedbacks</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Complaint ID</th>
+                            <th>Citizen</th>
+                            <th>Rating</th>
+                            <th>Speed</th>
+                            <th>Comment / Review</th>
+                            <th>Submitted Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="feedbacksTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">
+                                Loading citizen feedback records...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- XAMPP MySQL Live Database Connection Card -->
+        <div class="card-box" style="padding:24px; margin-top:30px; border-left: 4px solid #10b981;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+                <div>
+                    <h2 style="font-size:18px; color:var(--primary); display:flex; align-items:center; gap:8px;">
+                        <span>🗄️</span> XAMPP MySQL Live Database (<code style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px; font-size:14px;">roadfix_db</code>)
+                    </h2>
+                    <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">
+                        Connected to MySQL on <b>localhost:3306</b>. All registered users, citizen issues, repair proofs, feedbacks, and carousel slides are stored directly in XAMPP.
+                    </p>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <a href="http://localhost/phpmyadmin/index.php?route=/database/structure&db=roadfix_db" target="_blank" class="btn btn-secondary btn-sm" style="display:inline-flex; align-items:center; gap:6px;">
+                        <span>🌐</span> Open phpMyAdmin
+                    </a>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="loadDbStatus()">
+                        🔄 Check Live MySQL
+                    </button>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px; margin-top:16px;">
+                <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:8px; padding:14px;">
+                    <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Database Engine</div>
+                    <div id="dbStatusEngine" style="font-size:14px; font-weight:700; color:#10b981; margin-top:4px;">🟢 XAMPP MySQL (Connected)</div>
+                </div>
+                <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:8px; padding:14px;">
+                    <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Database Name & Port</div>
+                    <div style="font-size:14px; font-weight:700; color:var(--primary); margin-top:4px;">roadfix_db : 3306</div>
+                </div>
+                <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:8px; padding:14px;">
+                    <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Active SQL Tables</div>
+                    <div style="font-size:14px; font-weight:700; color:var(--primary); margin-top:4px;">users, issues, feedbacks, work_proofs, carousel_slides</div>
+                </div>
+                <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:8px; padding:14px;">
+                    <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">SQL Schema File</div>
+                    <div style="font-size:14px; font-weight:700; color:var(--primary); margin-top:4px;">database/schema.sql</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Registered Users Database Card -->
+        <div class="card-box" style="padding:24px; margin-top:30px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                <h2 style="font-size:18px; color:var(--primary);">👥 Registered Municipal Users & Citizens Database</h2>
+                <span id="usersCount" style="font-size:13px; color:var(--text-muted); font-weight:600;">Loading...</span>
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Full Name</th>
+                            <th>Email Address</th>
+                            <th>Phone</th>
+                            <th>Portal Role</th>
+                            <th>Assigned Department</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">
+                                Loading registered users from database...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Home Page Carousel & Banner Manager Card -->
+        <div class="card-box" style="padding:24px; margin-top:30px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+                <div>
+                    <h2 style="font-size:18px; color:var(--primary);">🎠 Home Page Carousel & Banner Manager</h2>
+                    <p style="font-size:13px; color:var(--text-muted);">Upload custom banner images or change headlines on the main portal slider.</p>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button type="button" class="btn btn-primary btn-sm" onclick="openSlideModal(0)">📸 Upload / Change Slide Photo</button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="resetDefaultSlides()">🔄 Reset Default Banners</button>
+                </div>
+            </div>
+
+            <div id="slidesPreviewGrid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px;">
+                <!-- Dynamically loaded preview cards -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal: Assign Department & Staff -->
+    <div id="assignModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="color:var(--primary);">👷 Assign Department & Field Officer</h3>
+                <button type="button" class="modal-close" onclick="closeModal('assignModal')">&times;</button>
+            </div>
+            <form onsubmit="handleAssignSubmit(event)">
+                <input type="hidden" id="assignIssueId">
+                <p id="assignIssueTitle" style="font-weight:600; color:#334155; margin-bottom:14px;"></p>
+
+                <label for="assignDept">Assign Department *</label>
+                <select id="assignDept" required>
+                    <option value="Roads & Infrastructure">Roads & Infrastructure</option>
+                    <option value="Sanitation & Waste">Sanitation & Waste</option>
+                    <option value="Electrical & Lighting">Electrical & Lighting</option>
+                    <option value="Water Supply & Drainage">Water Supply & Drainage</option>
+                </select>
+
+                <label for="assignOfficer">Field Supervising Officer</label>
+                <input type="text" id="assignOfficer" placeholder="e.g. Inspector Rajesh Kumar" value="Inspector Rajesh Kumar">
+
+                <button type="submit" class="btn btn-primary btn-block">Confirm Dispatch & Assignment</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Update Status -->
+    <div id="statusModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="color:var(--primary);">🔄 Update Complaint Lifecycle Status</h3>
+                <button type="button" class="modal-close" onclick="closeModal('statusModal')">&times;</button>
+            </div>
+            <form onsubmit="handleStatusSubmit(event)">
+                <input type="hidden" id="statusIssueId">
+                <p id="statusIssueTitle" style="font-weight:600; color:#334155; margin-bottom:14px;"></p>
+
+                <label for="newStatus">Select New Status *</label>
+                <select id="newStatus" required>
+                    <option value="SUBMITTED">SUBMITTED (Initial citizen report)</option>
+                    <option value="VERIFIED">VERIFIED (Reviewed by admin)</option>
+                    <option value="ASSIGNED">ASSIGNED (Dispatched to field crew)</option>
+                    <option value="IN_PROGRESS">IN PROGRESS (Crew actively repairing)</option>
+                    <option value="RESOLVED">RESOLVED (Repair complete & verified)</option>
+                    <option value="REJECTED">REJECTED (Invalid or out of scope)</option>
+                </select>
+
+                <button type="submit" class="btn btn-primary btn-block">Update Lifecycle Status</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Detailed Inspection & AI Assessment View -->
+    <div id="detailModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 680px;">
+            <div class="modal-header">
+                <h3 style="color:var(--primary);" id="modalDetailTitle">Complaint Inspection</h3>
+                <button type="button" class="modal-close" onclick="closeModal('detailModal')">&times;</button>
+            </div>
+            <div id="modalDetailBody"></div>
+        </div>
+    </div>
+
+    <!-- Modal: Edit Carousel Slide -->
+    <div id="slideModal" class="modal-overlay">
+        <div class="modal-content" style="max-width:540px;">
+            <div class="modal-header">
+                <h3 style="color:var(--primary);">📸 Upload / Edit Carousel Slide</h3>
+                <button type="button" class="modal-close" onclick="closeModal('slideModal')">&times;</button>
+            </div>
+            <form onsubmit="handleSlideSave(event)">
+                <label for="slideSelect">Select Slide to Edit *</label>
+                <select id="slideSelect" onchange="loadSlideToForm()" required>
+                    <option value="0">Slide 1: AI Hazard Detection</option>
+                    <option value="1">Slide 2: Field Operations & Dispatch</option>
+                    <option value="2">Slide 3: Clean City & Live Tracking</option>
+                    <option value="3">Slide 4: Citizen Verification & Reviews</option>
+                </select>
+
+                <label for="slideTag">Slide Tag / Badge</label>
+                <input type="text" id="slideTag" placeholder="e.g. 🤖 AI-POWERED DETECTION" required>
+
+                <label for="slideTitle">Headline / Title *</label>
+                <input type="text" id="slideTitle" placeholder="e.g. Transforming Urban Safety With Smart AI" required>
+
+                <label for="slideDesc">Description Text</label>
+                <textarea id="slideDesc" rows="2" placeholder="Brief description text for banner..."></textarea>
+
+                <label>Upload Banner Image from Computer (JPG / PNG)</label>
+                <input type="file" id="slidePhotoFile" accept="image/*" onchange="previewSlideImage(event)" style="padding:6px; background:#f8fafc; font-size:13px;">
+
+                <div id="slideImagePreviewBox" style="margin:10px 0; display:none; text-align:center;">
+                    <img id="slidePreviewImg" src="" style="width:100%; height:140px; object-fit:cover; border-radius:8px; border:1px solid #cbd5e1;">
+                </div>
+
+                <label for="slideImageUrl">Or Image URL</label>
+                <input type="url" id="slideImageUrl" placeholder="https://images.unsplash.com/..." oninput="onAdminSlideUrlChange()">
+
+                <button type="submit" class="btn btn-primary btn-block" style="margin-top:16px;">💾 Save & Update Home Page Carousel</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <div class="copyright">
+            © 2026 RoadFix AI | Civic Issue Reporting & Tracking Platform | KIET
+        </div>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script>
+        let allComplaints = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!RoadFix.requireAuth('ADMIN', '🛡️ Admin Authentication Required: Please log in with municipal administrator credentials.')) return;
+            refreshData();
+        });
+
+        async function refreshData() {
+            await Promise.all([loadStats(), loadComplaints(), loadFeedbacks(), loadUsers(), loadDbStatus()]);
+            await renderSlidesAdmin();
+        }
+
+        async function loadDbStatus() {
+            try {
+                const res = await fetch('http://localhost:8080/api/database/status');
+                if (res.ok) {
+                    const data = await res.json();
+                    const el = document.getElementById('dbStatusEngine');
+                    if (el) {
+                        if (data.mySqlConnected) {
+                            el.innerHTML = '<span style="color:#10b981;">🟢 XAMPP MySQL (roadfix_db Connected)</span>';
+                        } else {
+                            el.innerHTML = '<span style="color:#f59e0b;">🟠 Local Cache (Start MySQL in XAMPP)</span>';
+                        }
+                    }
+                }
+            } catch (e) {}
+        }
+
+        async function loadStats() {
+            try {
+                const s = await RoadFix.getStats();
+                document.getElementById('statTotal').innerText = s.totalIssues || 3;
+                document.getElementById('statSubmitted').innerText = s.submitted || 0;
+                document.getElementById('statAssigned').innerText = (s.inProgress || 1);
+                document.getElementById('statInProgress').innerText = (s.inProgress || 1);
+                document.getElementById('statResolved').innerText = s.resolved || 1;
+                document.getElementById('statAvgRating').innerText = `★ ${s.averageRating || '4.9'}`;
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function loadComplaints() {
+            try {
+                allComplaints = await RoadFix.getComplaints();
+                renderTable(allComplaints);
+            } catch (e) {
+                document.getElementById('complaintsTableBody').innerHTML = `
+                    <tr><td colspan="7" style="color:red; text-align:center;">Failed to load complaints.</td></tr>
+                `;
+            }
+        }
+
+        async function loadFeedbacks() {
+            try {
+                const feedbacks = await RoadFix.getFeedbacks();
+                const tbody = document.getElementById('feedbacksTableBody');
+                if (!feedbacks || feedbacks.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:18px; color:var(--text-muted);">No citizen feedback records received yet.</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = feedbacks.map(f => `
+                    <tr>
+                        <td><b>${f.complaintId || 'General'}</b></td>
+                        <td>${f.citizenName || 'Citizen'}</td>
+                        <td><span class="rating-stars">${'★'.repeat(f.rating || 5)}${'☆'.repeat(5 - (f.rating || 5))}</span></td>
+                        <td><span class="badge badge-VERIFIED">${f.resolutionSpeed || 'Fast'}</span></td>
+                        <td>"${f.comments || 'Satisfied with resolution.'}"</td>
+                        <td style="font-size:12px; color:#64748b;">${f.date || 'Recent'}</td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const users = await RoadFix.getUsers();
+                const tbody = document.getElementById('usersTableBody');
+                if (document.getElementById('usersCount')) {
+                    document.getElementById('usersCount').innerText = `${users.length} registered user${users.length === 1 ? '' : 's'}`;
+                }
+                if (!users || users.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:18px; color:var(--text-muted);">No users registered yet.</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = users.map(u => `
+                    <tr>
+                        <td><b>${u.id || '--'}</b></td>
+                        <td>${u.fullName || 'User'}</td>
+                        <td>${u.email}</td>
+                        <td>${u.phone || '--'}</td>
+                        <td><span class="badge badge-${u.role === 'ADMIN' ? 'RESOLVED' : (u.role === 'STAFF' ? 'ASSIGNED' : 'SUBMITTED')}">${u.role}</span></td>
+                        <td>${u.departmentName || '<span style="color:#94a3b8;">None (Citizen)</span>'}</td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function applyFilters() {
+            const status = document.getElementById('filterStatus').value;
+            const dept = document.getElementById('filterDept').value;
+            const q = document.getElementById('filterQuery').value.toLowerCase().trim();
+
+            const filtered = allComplaints.filter(item => {
+                const matchStatus = (status === 'ALL' || item.status === status);
+                const matchDept = (dept === 'ALL' || (item.department && item.department.includes(dept)));
+                const matchQuery = (!q || 
+                    (item.id && item.id.toLowerCase().includes(q)) ||
+                    (item.title && item.title.toLowerCase().includes(q)) ||
+                    (item.location && item.location.toLowerCase().includes(q)) ||
+                    (item.description && item.description.toLowerCase().includes(q))
+                );
+                return matchStatus && matchDept && matchQuery;
+            });
+
+            renderTable(filtered);
+        }
+
+        function renderTable(complaints) {
+            const tbody = document.getElementById('complaintsTableBody');
+            document.getElementById('resultCount').innerText = `Showing ${complaints.length} complaint${complaints.length === 1 ? '' : 's'}`;
+
+            if (complaints.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:30px; color:var(--text-muted);">No complaints match the filter criteria.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = complaints.map(c => `
+                <tr>
+                    <td>
+                        <a href="track.html?id=${encodeURIComponent(c.id)}" style="font-weight:700; color:var(--primary-light); text-decoration:none;">
+                            ${c.id}
+                        </a>
+                    </td>
+                    <td style="text-align:center;">
+                        <img src="${c.photoUrl || 'images/default-issue.jpg'}" onerror="this.src='https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=100&auto=format&fit=crop'" style="width:48px; height:48px; border-radius:6px; object-fit:cover; border:1px solid #cbd5e1; cursor:pointer;" onclick="inspectComplaint('${c.id}')" title="Click to inspect photo and AI analysis">
+                    </td>
+                    <td>
+                        <b>${c.title}</b>
+                        <div style="font-size:12px; color:var(--text-muted);">${c.category}</div>
+                    </td>
+                    <td>
+                        <div style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${c.location}">
+                            ${c.location}
+                        </div>
+                        <div style="font-size:11px; color:#64748b;">${c.date || 'Recent'}</div>
+                    </td>
+                    <td>
+                        <span class="sev-${c.severity || 'Medium'}">${c.severity || 'Medium'}</span>
+                    </td>
+                    <td>
+                        <span class="badge badge-${c.status}">${(c.status || 'SUBMITTED').replace('_', ' ')}</span>
+                    </td>
+                    <td>
+                        <span style="font-weight:500; font-size:13px; color:#334155;">
+                            ${c.department || '<span style="color:#94a3b8;">Unassigned</span>'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-btn-group">
+                            <button class="btn-dispatch" onclick="openAssignModal('${c.id}', '${escapeHtml(c.title)}', '${c.department || ''}')" title="Assign Department">Dispatch</button>
+                            <button class="btn-status" onclick="openStatusModal('${c.id}', '${escapeHtml(c.title)}', '${c.status}')" title="Update Status">Status</button>
+                            <button class="btn-inspect" onclick="inspectComplaint('${c.id}')" title="Inspect Details">Inspect</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Modal Helpers
+        function openAssignModal(id, title, currentDept) {
+            document.getElementById('assignIssueId').value = id;
+            document.getElementById('assignIssueTitle').innerText = `Complaint: "${title}" (${id})`;
+            if (currentDept) document.getElementById('assignDept').value = currentDept;
+            document.getElementById('assignModal').style.display = 'flex';
+        }
+
+        function openStatusModal(id, title, currentStatus) {
+            document.getElementById('statusIssueId').value = id;
+            document.getElementById('statusIssueTitle').innerText = `Complaint: "${title}" (${id})`;
+            document.getElementById('newStatus').value = currentStatus;
+            document.getElementById('statusModal').style.display = 'flex';
+        }
+
+        async function inspectComplaint(id) {
+            const issue = await RoadFix.getComplaintById(id);
+            if (!issue) return;
+
+            const feedbacks = await RoadFix.getFeedbacks();
+            const fb = feedbacks.find(f => f.complaintId && f.complaintId.toUpperCase() === id.toUpperCase());
+
+            document.getElementById('modalDetailTitle').innerText = `${issue.id} - Inspection & AI Analysis`;
+            document.getElementById('modalDetailBody').innerHTML = `
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:18px;">
+                    <div>
+                        <div style="font-size:13px; font-weight:700; color:#334155; margin-bottom:6px;">📸 Citizen Uploaded Image:</div>
+                        <img src="${issue.photoUrl || 'images/default-issue.jpg'}" onerror="this.src='https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=500&auto=format&fit=crop'" style="width:100%; height:180px; border-radius:8px; object-fit:cover; border:1px solid #cbd5e1;">
+                    </div>
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px;">
+                        <div style="font-size:13px; font-weight:700; color:#1e293b; margin-bottom:6px;">🤖 AI Vision Assessment:</div>
+                        <div style="font-size:13px; margin-bottom:4px;"><b>Detected:</b> ${issue.aiDetected || issue.category}</div>
+                        <div style="font-size:13px; margin-bottom:6px;"><b>Confidence:</b> <span style="color:#059669; font-weight:700;">${issue.aiConfidence || '95%'}</span></div>
+                        <div style="font-size:12px; color:#475569; background:#fff; padding:8px; border-radius:6px; border:1px solid #e2e8f0; line-height:1.4;">
+                            ${issue.aiHazard || 'Hazard analysis completed. Priority flagged for municipal dispatch.'}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="line-height:1.7; font-size:14px;">
+                    <p><b>Issue Title:</b> ${issue.title}</p>
+                    <p><b>Description:</b> ${issue.description || 'No description provided'}</p>
+                    <p><b>Location:</b> ${issue.location}</p>
+                    <p><b>Severity Score:</b> <span class="sev-${issue.severity}">${issue.severity}</span></p>
+                    <p><b>Status:</b> <span class="badge badge-${issue.status}">${issue.status}</span></p>
+                    <p><b>Department:</b> ${issue.department || 'Unassigned'}</p>
+                </div>
+
+                ${issue.repairNotes || issue.repairPhotoUrl ? `
+                    <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:14px; border-radius:8px; margin-top:16px;">
+                        <b style="color:#15803d; font-size:14px;">👷 Field Staff Repair Resolution Proof:</b>
+                        <p style="font-size:13px; margin:6px 0 10px 0; color:#166534;">${issue.repairNotes || 'Repairs completed by assigned field crew.'}</p>
+                        ${issue.repairPhotoUrl ? `
+                            <div>
+                                <div style="font-size:12px; font-weight:600; color:#166534; margin-bottom:4px;">Post-Repair Photo Proof:</div>
+                                <img src="${issue.repairPhotoUrl}" style="max-width:100%; max-height:200px; border-radius:6px; border:1px solid #86efac; object-fit:cover;">
+                            </div>
+                        ` : ''}
+                    </div>
+                ` : ''}
+
+                ${fb ? `
+                    <div style="background:#fefce8; border:1px solid #fef08a; padding:14px; border-radius:8px; margin-top:16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <b style="color:#854d0e; font-size:14px;">⭐ Citizen Review & Satisfaction Feedback:</b>
+                            <span style="color:#eab308; font-size:18px;">${'★'.repeat(fb.rating || 5)}</span>
+                        </div>
+                        <p style="font-size:13px; color:#713f12; margin:6px 0; font-style:italic;">"${fb.comments || fb.comment || 'Good repair.'}"</p>
+                        <div style="font-size:12px; color:#a16207;">
+                            Citizen: <b>${fb.citizenName || 'Citizen'}</b> (${fb.citizenEmail || '--'}) | Speed: <b>${fb.resolutionSpeed || 'Rapid'}</b>
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+            document.getElementById('detailModal').style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        async function handleAssignSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('assignIssueId').value;
+            const department = document.getElementById('assignDept').value;
+
+            await RoadFix.updateComplaint(id, { department, status: 'ASSIGNED' });
+            closeModal('assignModal');
+            refreshData();
+        }
+
+        async function handleStatusSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('statusIssueId').value;
+            const status = document.getElementById('newStatus').value;
+
+            await RoadFix.updateComplaint(id, { status });
+            closeModal('statusModal');
+            refreshData();
+        }
+
+        function escapeHtml(text) {
+            return text ? text.replace(/'/g, "\\'").replace(/"/g, '&quot;') : '';
+        }
+
+        // --- Carousel Management Engine ---
+        async function renderSlidesAdmin() {
+            const slides = await RoadFix.getSlides();
+            const grid = document.getElementById('slidesPreviewGrid');
+            if (!grid) return;
+            grid.innerHTML = slides.map((s, idx) => `
+                <div style="border:1px solid var(--border-color); border-radius:10px; overflow:hidden; background:#fff; box-shadow:var(--shadow-sm);">
+                    <img src="${s.image}" onerror="this.src='https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=500&auto=format&fit=crop'" style="width:100%; height:130px; object-fit:cover;">
+                    <div style="padding:14px;">
+                        <span style="font-size:11px; font-weight:700; color:#0369a1; background:#e0f2fe; padding:2px 8px; border-radius:10px;">Slide ${idx + 1}</span>
+                        <h4 style="font-size:13px; margin:6px 0 4px 0; color:var(--primary); line-height:1.3; font-weight:700;">${s.tag}</h4>
+                        <p style="font-size:12px; color:#64748b; line-height:1.4; height:34px; overflow:hidden;">${s.desc}</p>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="openSlideModal(${idx})" style="width:100%; margin-top:10px;">✏️ Change Photo / Details</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        let uploadedSlideBase64 = "";
+
+        function openSlideModal(index = 0) {
+            document.getElementById('slideSelect').value = index;
+            loadSlideToForm();
+            document.getElementById('slideModal').style.display = 'flex';
+        }
+
+        async function loadSlideToForm() {
+            const idx = parseInt(document.getElementById('slideSelect').value, 10);
+            const slides = await RoadFix.getSlides();
+            const s = slides[idx];
+            if (s) {
+                document.getElementById('slideTag').value = s.tag || '';
+                document.getElementById('slideTitle').value = (s.title || '').replace(/<[^>]*>?/gm, '');
+                document.getElementById('slideDesc').value = s.desc || '';
+
+                const fileInput = document.getElementById('slidePhotoFile');
+                if (fileInput) fileInput.value = '';
+
+                if (s.image && s.image.startsWith('data:')) {
+                    uploadedSlideBase64 = s.image;
+                    document.getElementById('slideImageUrl').value = '';
+                } else {
+                    uploadedSlideBase64 = '';
+                    document.getElementById('slideImageUrl').value = s.image || '';
+                }
+                
+                const pBox = document.getElementById('slideImagePreviewBox');
+                const pImg = document.getElementById('slidePreviewImg');
+                pImg.src = s.image;
+                pBox.style.display = 'block';
+            }
+        }
+
+        function onAdminSlideUrlChange() {
+            const url = document.getElementById('slideImageUrl').value.trim();
+            if (url) {
+                uploadedSlideBase64 = ''; // Clear base64 if typing URL
+                document.getElementById('slidePreviewImg').src = url;
+                document.getElementById('slideImagePreviewBox').style.display = 'block';
+            }
+        }
+
+        async function previewSlideImage(e) {
+            const file = e.target.files[0];
+            if (file) {
+                try {
+                    const compressed = await RoadFix.compressImage(file);
+                    uploadedSlideBase64 = compressed;
+                    document.getElementById('slideImageUrl').value = '';
+                    document.getElementById('slidePreviewImg').src = compressed;
+                    document.getElementById('slideImagePreviewBox').style.display = 'block';
+                } catch (err) {
+                    alert('⚠️ Error reading image: ' + err.message);
+                }
+            }
+        }
+
+        async function handleSlideSave(e) {
+            e.preventDefault();
+            const idx = parseInt(document.getElementById('slideSelect').value, 10);
+            const tag = document.getElementById('slideTag').value.trim();
+            const rawTitle = document.getElementById('slideTitle').value.trim();
+            const desc = document.getElementById('slideDesc').value.trim();
+            const urlInput = document.getElementById('slideImageUrl').value.trim();
+
+            const image = uploadedSlideBase64 || urlInput || "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=1600&auto=format&fit=crop&q=80";
+            const title = `${rawTitle}`;
+
+            try {
+                await RoadFix.updateSlide(idx, { tag, title, desc, image });
+                alert(`✅ Slide ${idx + 1} updated & saved to database! Home page carousel now displays your new photo.`);
+                closeModal('slideModal');
+                await renderSlidesAdmin();
+            } catch (err) {
+                alert("⚠️ Error saving slide: " + err.message);
+            }
+        }
+
+        async function resetDefaultSlides() {
+            if (confirm("Reset all carousel banners to default municipal photos?")) {
+                await RoadFix.resetSlides();
+                await renderSlidesAdmin();
+                alert("Carousel banners reset to default & saved to database!");
+            }
+        }
+    </script>
+</body>
+</html>

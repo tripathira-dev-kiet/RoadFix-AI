@@ -1,199 +1,170 @@
-```html
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - RoadFix AI</title>
-
+    <link rel="stylesheet" href="css/style.css">
     <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f4f7fb;
-            color: #222;
-        }
-
-        header {
-            background-color: #12315a;
-            padding: 18px 7%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        header h2 {
-            color: #ffffff;
-            margin: 0;
-            font-size: 25px;
-        }
-
-        nav a {
-            color: #dbeafe;
-            text-decoration: none;
-            margin-left: 20px;
-            font-size: 14px;
-        }
-
-        nav a:hover {
-            color: #8fd3c7;
-        }
-
         .login-box {
-            width: 350px;
-            margin: 70px auto;
+            width: 420px;
+            max-width: 92%;
+            margin: 50px auto;
             background: #ffffff;
-            padding: 30px;
-            border-radius: 10px;
-            border: 1px solid #dbe7f0;
-            box-shadow: 0 8px 24px rgba(18, 49, 90, 0.08);
+            padding: 35px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-md);
         }
 
         .login-box h2 {
             text-align: center;
-            color: #1769aa;
-            margin-bottom: 25px;
+            color: var(--primary-light);
+            margin-bottom: 8px;
+            font-size: 24px;
         }
 
-        label {
-            color: #34495e;
-            font-size: 14px;
-            font-weight: bold;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 11px;
-            margin: 8px 0 15px;
-            border: 1px solid #ccd9e5;
-            border-radius: 5px;
-            box-sizing: border-box;
-            outline: none;
-        }
-
-        input:focus, select:focus {
-            border-color: #1769aa;
-        }
-
-        button {
-            width: 100%;
-            padding: 11px;
-            background-color: #1769aa;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 15px;
-        }
-
-        button:hover {
-            background-color: #12315a;
-        }
-
-        a {
-            color: #1769aa;
-            text-decoration: none;
-        }
-
-        a:hover {
-            color: #12315a;
-        }
-
-        .login-box p {
-            color: #667789;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        footer {
-            background-color: #12315a;
-            color: white;
+        .login-box .subtitle {
             text-align: center;
-            padding: 15px;
-            margin-top: 50px;
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 24px;
         }
 
-        footer p {
-            margin: 0;
+        .alert-box {
+            padding: 12px 14px;
+            border-radius: 6px;
+            margin-bottom: 18px;
             font-size: 13px;
-            color: #dbeafe;
+            display: none;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fca5a5;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #86efac;
         }
     </style>
 </head>
-
 <body>
 
     <header>
-        <h2>RoadFix AI</h2>
-
-        <nav>
-            <a href="index.html">Home</a>
-            <a href="register.html">Register</a>
-        </nav>
+        <a href="index.html" class="logo-container">
+            <div class="logo">RoadFix<span>AI</span></div>
+            <span class="logo-tag">Login</span>
+        </a>
+        <nav id="mainNav"></nav>
     </header>
 
+    <div class="container">
+        <div class="login-box">
+            <h2>Welcome Back</h2>
+            <p class="subtitle">Sign in to your RoadFix AI portal account</p>
 
-    <div class="login-box">
+            <div id="alertBox" class="alert-box"></div>
 
-        <h2>Login</h2>
+            <form onsubmit="handleLogin(event)">
+                <label for="role">Login As (Role)</label>
+                <select id="role" required>
+                    <option value="CITIZEN">Citizen / Public User</option>
+                    <option value="ADMIN">Municipal Administrator</option>
+                    <option value="STAFF">Field Staff / Operations Officer</option>
+                </select>
 
-        <form onsubmit="loginUser(event)">
+                <label for="email">Registered Email</label>
+                <input type="email" id="email" placeholder="e.g. citizen@roadfix.ai" required>
 
-            <label>Email</label>
-            <input type="email" id="email" placeholder="Enter Email" required>
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password" required>
 
-            <label>Password</label>
-            <input type="password" id="password" placeholder="Enter Password" required>
+                <button type="submit" id="loginBtn" class="btn btn-primary btn-block">Login to Portal</button>
+            </form>
 
-            <label>Login As</label>
-            <select id="role" required>
-                <option value="">Select Role</option>
-                <option value="citizen">Citizen</option>
-                <option value="admin">Admin</option>
-                <option value="staff">Field Staff</option>
-            </select>
-
-            <button type="submit">Login</button>
-
-        </form>
-
-        <p>
-            Don't have an account?
-            <a href="register.html">Register</a>
-        </p>
-
-        <p>
-            <a href="index.html">Back to Home</a>
-        </p>
-
+            <p style="text-align:center; margin-top:20px; font-size:14px; color:var(--text-muted);">
+                Don't have an account? <a href="register.html" style="color:var(--primary-light); font-weight:600; text-decoration:none;">Create Account</a>
+            </p>
+        </div>
     </div>
 
-
     <footer>
-        <p>© 2026 RoadFix AI | Civic Issue Reporting & Tracking Platform</p>
+        <div class="copyright">
+            © 2026 RoadFix AI | Civic Issue Reporting & Tracking Platform | KIET
+        </div>
     </footer>
 
-
+    <script src="js/api.js"></script>
     <script>
-        function loginUser(event) {
-            event.preventDefault();
+        document.addEventListener('DOMContentLoaded', () => {
+            const authMsg = sessionStorage.getItem('auth_msg');
+            if (authMsg) {
+                const alertBox = document.getElementById('alertBox');
+                alertBox.className = 'alert-box alert-error';
+                alertBox.innerText = authMsg;
+                alertBox.style.display = 'block';
+                sessionStorage.removeItem('auth_msg');
+            }
+        });
 
-            let role = document.getElementById("role").value;
+        async function handleLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            const alertBox = document.getElementById('alertBox');
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const role = document.getElementById('role').value;
 
-            if (role == "citizen") {
-                window.location.href = "report.html";
+            btn.disabled = true;
+            btn.innerText = 'Authenticating...';
+            alertBox.style.display = 'none';
+
+            const res = await RoadFix.login(email, password, role);
+
+            if (!res.success) {
+                alertBox.className = 'alert-box alert-error';
+                alertBox.innerText = res.message || 'Invalid email or password.';
+                alertBox.style.display = 'block';
+                btn.disabled = false;
+                btn.innerText = 'Login to Portal';
+                return;
             }
-            else if (role == "admin") {
-                window.location.href = "admin.html";
-            }
-            else if (role == "staff") {
-                window.location.href = "staff.html";
-            }
+
+            const userRole = (res.user && res.user.role) ? res.user.role : role;
+
+            alertBox.className = 'alert-box alert-success';
+            alertBox.innerText = `Login successful as ${userRole}! Redirecting...`;
+            alertBox.style.display = 'block';
+
+            setTimeout(() => {
+                const redirect = sessionStorage.getItem('auth_redirect');
+                sessionStorage.removeItem('auth_redirect');
+                if (redirect && !redirect.includes('login.html')) {
+                    if (redirect.includes('admin.html') && userRole !== 'ADMIN') {
+                        window.location.href = (userRole === 'STAFF' || userRole === 'DEPARTMENT_OFFICER') ? 'staff.html' : 'citizen.html';
+                        return;
+                    }
+                    if (redirect.includes('staff.html') && userRole !== 'STAFF' && userRole !== 'DEPARTMENT_OFFICER') {
+                        window.location.href = (userRole === 'ADMIN') ? 'admin.html' : 'citizen.html';
+                        return;
+                    }
+                    window.location.href = redirect;
+                    return;
+                }
+
+                if (userRole === 'ADMIN') {
+                    window.location.href = 'admin.html';
+                } else if (userRole === 'STAFF' || userRole === 'DEPARTMENT_OFFICER') {
+                    window.location.href = 'staff.html';
+                } else {
+                    window.location.href = 'citizen.html';
+                }
+            }, 600);
         }
     </script>
-
 </body>
 </html>
-```

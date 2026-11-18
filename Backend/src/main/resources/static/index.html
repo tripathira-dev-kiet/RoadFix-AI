@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoadFix AI - Smart Civic Issue Reporting & Municipal Tracking Platform</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Modern Carousel / Hero Slider Styling */
+        .slider-wrapper {
+            position: relative;
+            width: 100%;
+            height: 520px;
+            overflow: hidden;
+            background: #0f172a;
+        }
+
+        .slider-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.5s ease-in-out;
+            will-change: transform;
+        }
+
+        .slide {
+            flex: 0 0 100%;
+            width: 100%;
+            min-width: 100%;
+            max-width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .slide-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, rgba(15, 23, 42, 0.92) 0%, rgba(15, 23, 42, 0.75) 50%, rgba(15, 23, 42, 0.35) 100%);
+            z-index: 1;
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 2;
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            color: #ffffff;
+            padding: 0 20px;
+        }
+
+        .slide-tag {
+            display: inline-block;
+            background: rgba(143, 211, 199, 0.25);
+            color: var(--accent);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            border: 1px solid rgba(143, 211, 199, 0.5);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .slide-title {
+            font-size: 42px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 16px;
+            max-width: 680px;
+        }
+
+        .slide-title span {
+            color: var(--accent);
+        }
+
+        .slide-desc {
+            font-size: 17px;
+            color: #cbd5e1;
+            max-width: 580px;
+            line-height: 1.6;
+            margin-bottom: 26px;
+        }
+
+        .slide-btn-group {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        /* Slider Controls */
+        .slider-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 22px;
+            transition: all 0.25s ease;
+            user-select: none;
+            outline: none;
+        }
+
+        .slider-btn:hover {
+            background: rgba(255, 255, 255, 0.55);
+            color: #0f172a;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .slider-btn-prev { left: 24px; }
+        .slider-btn-next { right: 24px; }
+
+        .slider-dots {
+            position: absolute;
+            bottom: 22px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 50;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dot.active {
+            background: var(--accent);
+            width: 28px;
+            border-radius: 12px;
+        }
+
+        /* Floating Quick Track Bar */
+        .floating-search-bar {
+            max-width: 1000px;
+            margin: -36px auto 0 auto;
+            position: relative;
+            z-index: 20;
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 22px 28px;
+            box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .floating-search-bar h3 {
+            font-size: 16px;
+            color: var(--primary);
+            white-space: nowrap;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .floating-search-form {
+            display: flex;
+            flex: 1;
+            gap: 10px;
+            min-width: 280px;
+        }
+
+        .floating-search-form input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+
+
+        /* Features Section */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 22px;
+            margin-top: 30px;
+        }
+
+        .feature-card {
+            background: #ffffff;
+            padding: 26px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.25s ease;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary-light);
+        }
+
+        .feature-icon-wrapper {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            margin-bottom: 16px;
+        }
+
+        .f-citizen { background: #e0f2fe; color: #0284c7; }
+        .f-admin { background: #fef3c7; color: #d97706; }
+        .f-staff { background: #dcfce7; color: #16a34a; }
+        .f-track { background: #f3e8ff; color: #7e22ce; }
+        .f-explore { background: #ffe4e6; color: #e11d48; }
+        .f-feedback { background: #ccfbf1; color: #0d9488; }
+
+        .feature-card h3 {
+            color: var(--primary);
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.55;
+            margin-bottom: 18px;
+            flex: 1;
+        }
+
+        /* Verification Showcase (Before / After) */
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            margin-top: 25px;
+        }
+
+        .showcase-card {
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .showcase-images {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            height: 160px;
+        }
+
+        .showcase-images img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .showcase-body {
+            padding: 16px;
+        }
+
+        /* How it Works */
+        .how-section {
+            background: #ffffff;
+            padding: 60px 7%;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 35px;
+        }
+
+        .step-box {
+            background: #f8fafc;
+            padding: 22px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .step-num {
+            width: 36px;
+            height: 36px;
+            background: var(--primary-light);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin: 0 auto 12px;
+            font-size: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .slider-wrapper {
+                height: 440px;
+            }
+            .slide-title {
+                font-size: 26px;
+            }
+            .slide-desc {
+                font-size: 14px;
+            }
+            .floating-search-bar {
+                margin: -20px 15px 0 15px;
+                padding: 16px;
+            }
+            .slider-btn {
+                width: 38px;
+                height: 38px;
+                font-size: 16px;
+                display: flex !important;
+            }
+            .slider-btn-prev { left: 8px; }
+            .slider-btn-next { right: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <a href="index.html" class="logo-container">
+            <div class="logo">RoadFix<span>AI</span></div>
+            <span class="logo-tag">Civic Portal</span>
+        </a>
+        <nav id="mainNav"></nav>
+    </header>
+
+    <!-- Carousel / Hero Slider -->
+    <div class="slider-wrapper" id="heroSlider">
+        <div class="slider-container" id="sliderContainer">
+
+            <!-- Slide 1: AI Hazard Detection -->
+            <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=1600&auto=format&fit=crop&q=80');">
+                <div class="slide-overlay"></div>
+                <div class="slide-content">
+                    <span class="slide-tag">🤖 AI-Powered Road Hazard Detection</span>
+                    <h1 class="slide-title">Transforming Urban Safety With <span>Smart RoadFix AI</span></h1>
+                    <p class="slide-desc">Detect potholes, overflowing stormwater drains, and road damages instantly with automated computer vision hazard scoring and GPS coordinates.</p>
+                    <div class="slide-btn-group">
+                        <a href="report.html" class="btn btn-accent" style="font-weight:700; color:#12315a; padding:12px 24px;">📸 Report Road Issue</a>
+                        <a href="track.html" class="btn btn-secondary" style="padding:12px 22px;">🔍 Live Progress Tracker</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 2: Field Operations & Paving -->
+            <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1578575437130-527eed3abbec?w=1600&auto=format&fit=crop&q=80');">
+                <div class="slide-overlay"></div>
+                <div class="slide-content">
+                    <span class="slide-tag">👷 48-Hour Municipal Dispatch Commitment</span>
+                    <h1 class="slide-title">Rapid Field Repairs & <span>Verified Work Orders</span></h1>
+                    <p class="slide-desc">Automated task routing to Roads & Infrastructure, Sanitation, and Electrical municipal squads with photographic proof of completion.</p>
+                    <div class="slide-btn-group">
+                        <a href="staff.html" class="btn btn-accent" style="font-weight:700; color:#12315a; padding:12px 24px;">👷 Field Staff Panel</a>
+                        <a href="complaints.html" class="btn btn-secondary" style="padding:12px 22px;">📋 View Public Issues</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 3: Clean, Green & Well-Lit Smart Cities -->
+            <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=1600&auto=format&fit=crop&q=80');">
+                <div class="slide-overlay"></div>
+                <div class="slide-content">
+                    <span class="slide-tag">⚡ Transparent 5-Stage Lifecycle</span>
+                    <h1 class="slide-title">Accountable Governance for <span>Safer City Streets</span></h1>
+                    <p class="slide-desc">Follow every civic complaint through Submitted, Verified, Assigned, In Progress, and Resolved milestones in real time.</p>
+                    <div class="slide-btn-group">
+                        <a href="citizen.html" class="btn btn-accent" style="font-weight:700; color:#12315a; padding:12px 24px;">👤 Citizen Dashboard</a>
+                        <a href="admin.html" class="btn btn-secondary" style="padding:12px 22px;">🛡️ Admin Command Center</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 4: Citizen Participation & Quality Reviews -->
+            <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1600&auto=format&fit=crop&q=80');">
+                <div class="slide-overlay"></div>
+                <div class="slide-content">
+                    <span class="slide-tag">⭐ 5-Star Citizen Verification Feedback</span>
+                    <h1 class="slide-title">Empowering Citizens & <span>Building Safer Roads</span></h1>
+                    <p class="slide-desc">Citizens inspect post-repair photo proof and rate municipal performance to ensure public funds deliver lasting road infrastructure.</p>
+                    <div class="slide-btn-group">
+                        <a href="feedback.html" class="btn btn-accent" style="font-weight:700; color:#12315a; padding:12px 24px;">⭐ Submit Service Rating</a>
+                        <a href="login.html" class="btn btn-secondary" style="padding:12px 22px;">🔑 Sign In to Portal</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Slider Arrow Controls -->
+        <button type="button" class="slider-btn slider-btn-prev" id="btnPrevSlide" onclick="prevSlide()" aria-label="Previous Slide">❮</button>
+        <button type="button" class="slider-btn slider-btn-next" id="btnNextSlide" onclick="nextSlide()" aria-label="Next Slide">❯</button>
+
+        <!-- Slider Dots -->
+        <div class="slider-dots" id="sliderDots">
+            <span class="dot active" onclick="goToSlide(0)"></span>
+            <span class="dot" onclick="goToSlide(1)"></span>
+            <span class="dot" onclick="goToSlide(2)"></span>
+            <span class="dot" onclick="goToSlide(3)"></span>
+        </div>
+    </div>
+
+    <!-- Floating Quick Track Bar -->
+    <div class="floating-search-bar">
+        <h3>🔍 Quick Complaint Tracker</h3>
+        <form onsubmit="handleQuickTrack(event)" class="floating-search-form">
+            <input type="text" id="quickId" placeholder="Enter Tracking ID (e.g. RF-101, RF-102)" required>
+            <button type="submit" class="btn btn-primary" style="padding:10px 22px; white-space:nowrap;">Track Progress</button>
+        </form>
+    </div>
+
+    <!-- Real-Time Metrics Counters (Dynamic from Backend) -->
+    <div class="container" style="margin-top: 40px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+            <h2 style="font-size: 20px; color: var(--primary);">📊 Real-Time Civic Operations Dashboard</h2>
+            <span style="font-size:12px; color:var(--text-muted); font-weight:600;">Live synchronization with Municipal DB</span>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3 id="statTotal">--</h3>
+                <p>Total Complaints</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="statSubmitted" style="color:#0369a1;">--</h3>
+                <p>Submitted / Pending</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="statInProgress" style="color:#c2410c;">--</h3>
+                <p>Active Work In Progress</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="statResolved" style="color:#15803d;">--</h3>
+                <p>Issues Resolved</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="statRating" style="color:#eab308;">★ --</h3>
+                <p>Public Rating</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comprehensive Role Hub Modules -->
+    <section class="container" style="margin-top: 25px;">
+        <h2 style="font-size: 26px; color: var(--primary); text-align: center; margin-bottom: 8px;">Explore RoadFix AI Modules</h2>
+        <p style="text-align: center; color: var(--text-muted); max-width: 650px; margin: 0 auto 30px;">
+            Seamless collaboration between Citizens, Municipal Administrative Command, and On-Site Field Crews.
+        </p>
+
+        <div class="features-grid">
+            <!-- 1. Citizen Dashboard -->
+            <div class="feature-card">
+                <div class="feature-icon-wrapper f-citizen">👤</div>
+                <h3>Citizen Dashboard</h3>
+                <p>Personal citizen command center to monitor submitted issues, check live repair milestones, and submit new hazard reports.</p>
+                <a href="citizen.html" class="btn btn-primary btn-sm">Open Citizen Portal →</a>
+            </div>
+
+            <!-- 2. Admin Command -->
+            <div class="feature-card">
+                <div class="feature-icon-wrapper f-admin">🛡️</div>
+                <h3>Admin Command Center</h3>
+                <p>Municipal authority dashboard to inspect citizen photos, review AI hazard scores, dispatch crews, and oversee city operations.</p>
+                <a href="admin.html" class="btn btn-primary btn-sm">Admin Dashboard →</a>
+            </div>
+
+            <!-- 3. Staff Panel -->
+            <div class="feature-card">
+                <div class="feature-icon-wrapper f-staff">👷</div>
+                <h3>Field Operations Staff</h3>
+                <p>Field repair squad portal to view departmental tasks, inspect citizen photos, mark progress, and upload repair proof photos.</p>
+                <a href="staff.html" class="btn btn-primary btn-sm">Staff Operations →</a>
+            </div>
+
+            <!-- 4. Live Tracking -->
+            <div class="feature-card">
+                <div class="feature-icon-wrapper f-track">🔍</div>
+                <h3>5-Stage Live Tracker</h3>
+                <p>Enter any Complaint ID to view the complete 5-stage progress timeline, supervising officer details, and post-repair proof.</p>
+                <a href="track.html" class="btn btn-primary btn-sm">Track Progress →</a>
+            </div>
+
+            <!-- 5. Community Issues -->
+            <div class="feature-card">
+                <div class="feature-icon-wrapper f-explore">📋</div>
+                <h3>Community Explorer</h3>
+                <p>Search public infrastructure reports across the city with real-time status and category filtering for full transparency.</p>
+                <a href="complaints.html" class="btn btn-primary btn-sm">Explore Issues →</a>
+            </div>
+
+            <!-- 6. Citizen Feedback -->
+            <div class="feature-card">
+                <div class="feature-icon-wrapper f-feedback">⭐</div>
+                <h3>Citizen Feedback & Rating</h3>
+                <p>Evaluate repair quality and speed with 5-star ratings and written reviews to hold municipal departments accountable.</p>
+                <a href="feedback.html" class="btn btn-primary btn-sm">Submit Review →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-section">
+        <h2 style="font-size: 26px; color: var(--primary); margin-bottom: 8px;">How RoadFix AI Works</h2>
+        <p style="color: var(--text-muted); max-width: 600px; margin: 0 auto;">Streamlined civic issue lifecycle from detection to verified repair.</p>
+
+        <div class="steps-grid">
+            <div class="step-box">
+                <div class="step-num">1</div>
+                <h4 style="color:var(--primary); margin-bottom:6px;">Snap & Geotag</h4>
+                <p style="font-size:13px; color:var(--text-muted);">Citizen captures road hazard photo; HTML5 GPS logs precise coordinates.</p>
+            </div>
+
+            <div class="step-box">
+                <div class="step-num">2</div>
+                <h4 style="color:var(--primary); margin-bottom:6px;">AI Hazard Rating</h4>
+                <p style="font-size:13px; color:var(--text-muted);">Vision AI classifies hazard (Pothole, Drainage, Streetlight) & assigns severity score.</p>
+            </div>
+
+            <div class="step-box">
+                <div class="step-num">3</div>
+                <h4 style="color:var(--primary); margin-bottom:6px;">Municipal Dispatch</h4>
+                <p style="font-size:13px; color:var(--text-muted);">Admin reviews assessment and dispatches work order to the relevant department.</p>
+            </div>
+
+            <div class="step-box">
+                <div class="step-num">4</div>
+                <h4 style="color:var(--primary); margin-bottom:6px;">On-Site Field Repair</h4>
+                <p style="font-size:13px; color:var(--text-muted);">Field crew repairs hazard, rolls bitumen, and uploads post-repair photo proof.</p>
+            </div>
+
+            <div class="step-box">
+                <div class="step-num">5</div>
+                <h4 style="color:var(--primary); margin-bottom:6px;">Citizen Review</h4>
+                <p style="font-size:13px; color:var(--text-muted);">Citizen verifies resolution photo proof and rates repair satisfaction.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recent Verified Resolutions Showcase -->
+    <section class="container" style="margin-top: 40px; margin-bottom: 40px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:10px;">
+            <div>
+                <h2 style="font-size: 22px; color: var(--primary);">✅ Verified Municipal Resolutions</h2>
+                <p style="font-size:13px; color:var(--text-muted);">Recent road repairs completed and verified with photographic proof.</p>
+            </div>
+            <a href="complaints.html" class="btn btn-secondary btn-sm">View All Community Complaints →</a>
+        </div>
+
+        <div class="showcase-grid">
+            <!-- Sample Resolution 1 -->
+            <div class="showcase-card">
+                <div class="showcase-images">
+                    <img src="https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=500&auto=format&fit=crop" alt="Before Pothole" title="Before: Citizen Reported">
+                    <img src="https://images.unsplash.com/photo-1508873696983-2df570464753?w=500&auto=format&fit=crop" alt="After Repair" title="After: Field Crew Repaired">
+                </div>
+                <div class="showcase-body">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                        <span class="badge badge-RESOLVED">RESOLVED</span>
+                        <span style="font-size:12px; font-weight:700; color:#0369a1;">RF-101</span>
+                    </div>
+                    <h4 style="font-size:15px; color:var(--primary); margin-bottom:4px;">Deep Pothole at Main Junction</h4>
+                    <p style="font-size:12px; color:#64748b; margin-bottom:8px;">📍 Sector 62 Road, Near KIET Campus</p>
+                    <p style="font-size:12px; color:#15803d; background:#f0fdf4; padding:6px 10px; border-radius:6px; border:1px solid #bbf7d0;">
+                        🛠️ <b>Proof:</b> Bitumen hot-mix leveled with compaction roller.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Sample Resolution 2 -->
+            <div class="showcase-card">
+                <div class="showcase-images">
+                    <img src="https://images.unsplash.com/photo-1544717305-2782549b5136?w=500&auto=format&fit=crop" alt="Before Drain" title="Before: Citizen Reported">
+                    <img src="https://images.unsplash.com/photo-1578575437130-527eed3abbec?w=500&auto=format&fit=crop" alt="After Repair" title="After: Field Crew Repaired">
+                </div>
+                <div class="showcase-body">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                        <span class="badge badge-IN_PROGRESS">IN PROGRESS</span>
+                        <span style="font-size:12px; font-weight:700; color:#0369a1;">RF-102</span>
+                    </div>
+                    <h4 style="font-size:15px; color:var(--primary); margin-bottom:4px;">Blocked Stormwater Drain</h4>
+                    <p style="font-size:12px; color:#64748b; margin-bottom:8px;">📍 Commercial Street Crossing</p>
+                    <p style="font-size:12px; color:#0369a1; background:#f0f9ff; padding:6px 10px; border-radius:6px; border:1px solid #bae6fd;">
+                        ⚙️ <b>Action:</b> Sanitation crew on-site clearing plastic debris.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Sample Resolution 3 -->
+            <div class="showcase-card">
+                <div class="showcase-images">
+                    <img src="https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=500&auto=format&fit=crop" alt="Before Light" title="Before: Citizen Reported">
+                    <img src="https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=500&auto=format&fit=crop" alt="After Repair" title="After: Field Crew Repaired">
+                </div>
+                <div class="showcase-body">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                        <span class="badge badge-ASSIGNED">ASSIGNED</span>
+                        <span style="font-size:12px; font-weight:700; color:#0369a1;">RF-103</span>
+                    </div>
+                    <h4 style="font-size:15px; color:var(--primary); margin-bottom:4px;">Streetlight Non-Functional</h4>
+                    <p style="font-size:12px; color:#64748b; margin-bottom:8px;">📍 100ft Ring Road, Junction 4</p>
+                    <p style="font-size:12px; color:#b45309; background:#fffbeb; padding:6px 10px; border-radius:6px; border:1px solid #fde68a;">
+                        👷 <b>Action:</b> Dispatched to Electrical & Lighting maintenance crew.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Citizen Reviews & Satisfaction Ratings (Public Transparency) -->
+    <section class="container" style="margin-top: 40px; margin-bottom: 50px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+            <div>
+                <h2 style="font-size: 22px; color: var(--primary);">⭐ Public Citizen Reviews & Satisfaction Log</h2>
+                <p style="font-size:13px; color:var(--text-muted);">Real feedback and 5-star ratings submitted by citizens on completed road repairs.</p>
+            </div>
+            <a href="feedback.html" class="btn btn-accent" style="font-weight:700; color:#12315a;">⭐ Submit Your Rating</a>
+        </div>
+
+        <div class="features-grid" id="homeReviewsGrid" style="margin-top:15px;">
+            <!-- Dynamically populated from Database / LocalStorage -->
+            <div class="feature-card" style="border-top:3px solid #f59e0b;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span style="color:#f59e0b; font-size:18px; font-weight:bold;">★★★★★</span>
+                    <span class="badge badge-VERIFIED">Rapid & Efficient</span>
+                </div>
+                <p style="font-style:italic; color:#334155; font-size:14px; margin-bottom:14px; flex:1;">
+                    "Excellent repair! Deep pothole on MG Road was filled with hot-mix bitumen and leveled completely flush within 36 hours. Very safe for daily driving now."
+                </p>
+                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #f1f5f9; padding-top:10px; font-size:12px; color:#64748b;">
+                    <b>👤 Ramesh Citizen</b>
+                    <span style="font-weight:600; color:#0369a1;">Ref: RF-101</span>
+                </div>
+            </div>
+
+            <div class="feature-card" style="border-top:3px solid #f59e0b;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span style="color:#f59e0b; font-size:18px; font-weight:bold;">★★★★★</span>
+                    <span class="badge badge-VERIFIED">Quick</span>
+                </div>
+                <p style="font-style:italic; color:#334155; font-size:14px; margin-bottom:14px; flex:1;">
+                    "Sanitation squad arrived promptly to clean the overflowing drain and removed plastic blockage. Footpath is dry and safe again."
+                </p>
+                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #f1f5f9; padding-top:10px; font-size:12px; color:#64748b;">
+                    <b>👤 Priya Sharma</b>
+                    <span style="font-weight:600; color:#0369a1;">Ref: RF-102</span>
+                </div>
+            </div>
+
+            <div class="feature-card" style="border-top:3px solid #f59e0b;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span style="color:#f59e0b; font-size:18px; font-weight:bold;">★★★★★</span>
+                    <span class="badge badge-VERIFIED">5-Star Quality</span>
+                </div>
+                <p style="font-style:italic; color:#334155; font-size:14px; margin-bottom:14px; flex:1;">
+                    "Streetlight on Ring Road junction was fixed quickly by electrical crew. Great transparency with photo proofs!"
+                </p>
+                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #f1f5f9; padding-top:10px; font-size:12px; color:#64748b;">
+                    <b>👤 Sunil Verma</b>
+                    <span style="font-weight:600; color:#0369a1;">Ref: RF-103</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="copyright">
+            © 2026 RoadFix AI | Smart Municipal Road Hazard Reporting & Tracking Platform | MCA Project, KIET Group of Institutions
+        </div>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script>
+        // --- Carousel Slider Engine ---
+        let currentSlide = 0;
+        let slideInterval = null;
+
+        let cachedSlideCount = 4;
+
+        function getTotalSlides() {
+            return cachedSlideCount;
+        }
+
+        function updateSlider() {
+            const container = document.getElementById('sliderContainer');
+            if (container) {
+                container.style.transform = `translateX(-${currentSlide * 100}%)`;
+            }
+
+            // Update dots
+            const dots = document.querySelectorAll('.slider-dots .dot');
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+        }
+
+        function nextSlide() {
+            const total = getTotalSlides();
+            currentSlide = (currentSlide + 1) % total;
+            updateSlider();
+            resetAutoSlide();
+        }
+
+        function prevSlide() {
+            const total = getTotalSlides();
+            currentSlide = (currentSlide - 1 + total) % total;
+            updateSlider();
+            resetAutoSlide();
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            updateSlider();
+            resetAutoSlide();
+        }
+
+        function startAutoSlide() {
+            clearInterval(slideInterval);
+            slideInterval = setInterval(() => {
+                nextSlide();
+            }, 6000);
+        }
+
+        function resetAutoSlide() {
+            clearInterval(slideInterval);
+            startAutoSlide();
+        }
+
+        // Pause on hover
+        const sliderEl = document.getElementById('heroSlider');
+        if (sliderEl) {
+            sliderEl.addEventListener('mouseenter', () => clearInterval(slideInterval));
+            sliderEl.addEventListener('mouseleave', () => startAutoSlide());
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') prevSlide();
+            if (e.key === 'ArrowRight') nextSlide();
+        });
+
+        // Initialize slider & metrics on DOM load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await renderSlider();
+            startAutoSlide();
+            loadLiveMetrics();
+            loadHomeReviews();
+
+            // Button click listeners
+            document.getElementById('btnPrevSlide')?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                prevSlide();
+            });
+            document.getElementById('btnNextSlide')?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                nextSlide();
+            });
+        });
+
+        async function renderSlider() {
+            const slides = await RoadFix.getSlides();
+            cachedSlideCount = (slides && slides.length > 0) ? slides.length : 4;
+            const container = document.getElementById('sliderContainer');
+            const dotsContainer = document.getElementById('sliderDots');
+            if (!container || !slides || slides.length === 0) return;
+
+            container.innerHTML = slides.map(s => `
+                <div class="slide" style="background-image: url('${s.image}');">
+                    <div class="slide-overlay"></div>
+                    <div class="slide-content">
+                        <span class="slide-tag">${s.tag}</span>
+                        <h1 class="slide-title">${s.title}</h1>
+                        <p class="slide-desc">${s.desc}</p>
+                        <div class="slide-btn-group">
+                            <a href="${s.btn1Link || 'report.html'}" class="btn btn-accent" style="font-weight:700; color:#12315a; padding:12px 24px;">${s.btn1Text || '📸 Report Road Issue'}</a>
+                            <a href="${s.btn2Link || 'track.html'}" class="btn btn-secondary" style="padding:12px 22px;">${s.btn2Text || '🔍 Live Progress Tracker'}</a>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            if (dotsContainer) {
+                dotsContainer.innerHTML = slides.map((_, idx) => `
+                    <span class="dot ${idx === currentSlide ? 'active' : ''}" onclick="goToSlide(${idx})"></span>
+                `).join('');
+            }
+            updateSlider();
+        }
+
+        // --- Live Operational Metrics ---
+        async function loadLiveMetrics() {
+            try {
+                const s = await RoadFix.getStats();
+                document.getElementById('statTotal').innerText = s.totalIssues || 3;
+                document.getElementById('statSubmitted').innerText = s.submitted || 0;
+                document.getElementById('statInProgress').innerText = s.inProgress || 2;
+                document.getElementById('statResolved').innerText = s.resolved || 1;
+                document.getElementById('statRating').innerText = `★ ${s.averageRating || '4.9'}`;
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // --- Live Community Feedback Reviews ---
+        async function loadHomeReviews() {
+            try {
+                const feedbacks = await RoadFix.getFeedbacks();
+                const container = document.getElementById('homeReviewsGrid');
+                if (!container || !feedbacks || feedbacks.length === 0) return;
+                const list = feedbacks.slice(0, 3);
+                container.innerHTML = list.map(f => `
+                    <div class="feature-card" style="border-top:3px solid #f59e0b;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <span style="color:#f59e0b; font-size:18px; font-weight:bold;">${'★'.repeat(f.rating || 5)}</span>
+                            <span class="badge badge-VERIFIED">${f.resolutionSpeed || 'Rapid'}</span>
+                        </div>
+                        <p style="font-style:italic; color:#334155; font-size:14px; margin-bottom:14px; flex:1;">
+                            "${f.comments || f.comment || 'High quality repair work and fast response.'}"
+                        </p>
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #f1f5f9; padding-top:10px; font-size:12px; color:#64748b;">
+                            <b>👤 ${f.citizenName || 'Citizen'}</b>
+                            <span style="font-weight:600; color:#0369a1;">Ref: ${f.complaintId || 'General'}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        // Quick Track Handler
+        function handleQuickTrack(e) {
+            e.preventDefault();
+            const id = document.getElementById('quickId').value.trim();
+            if (id) {
+                window.location.href = `track.html?id=${encodeURIComponent(id)}`;
+            }
+        }
+    </script>
+</body>
+</html>

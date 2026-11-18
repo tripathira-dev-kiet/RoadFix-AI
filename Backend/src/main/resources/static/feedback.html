@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citizen Feedback - RoadFix AI</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .feedback-box {
+            width: 650px;
+            max-width: 92%;
+            margin: 40px auto;
+            background: #ffffff;
+            padding: 35px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-md);
+        }
+
+        .feedback-box h2 {
+            color: var(--primary-light);
+            margin-bottom: 6px;
+            font-size: 24px;
+        }
+
+        .feedback-box .subtitle {
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .stars-container {
+            display: flex;
+            gap: 12px;
+            margin: 8px 0 16px;
+        }
+
+        .star-item {
+            font-size: 28px;
+            color: #cbd5e1;
+            cursor: pointer;
+            transition: color 0.15s, transform 0.1s;
+        }
+
+        .star-item:hover, .star-item.active {
+            color: #f59e0b;
+            transform: scale(1.15);
+        }
+
+        .speed-ratings {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .speed-btn {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text-main);
+            transition: all 0.2s;
+        }
+
+        .speed-btn.selected {
+            background: var(--primary-light);
+            color: #ffffff;
+            border-color: var(--primary-light);
+        }
+
+        .success-box {
+            display: none;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            padding: 24px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="logo-container">
+            <div class="logo">RoadFix<span>AI</span></div>
+            <span class="logo-tag">Citizen Feedback</span>
+        </a>
+        <nav id="mainNav"></nav>
+    </header>
+
+    <div class="container">
+        <div class="feedback-box">
+            <h2>⭐ Citizen Service Feedback</h2>
+            <p class="subtitle">Your feedback holds municipal authorities and repair crews accountable to quality standards.</p>
+
+            <div id="successBox" class="success-box">
+                <h3 style="color:#15803d; margin-bottom:8px;">🎉 Thank You for Your Feedback!</h3>
+                <p style="color:#334155; font-size:14px;">Your review and rating have been recorded in the municipal transparency log.</p>
+                <div style="margin-top:16px;">
+                    <a href="index.html" class="btn btn-primary" style="margin-right:10px;">Return Home</a>
+                    <a href="complaints.html" class="btn btn-secondary">Explore Other Complaints</a>
+                </div>
+            </div>
+
+            <form id="feedbackForm" onsubmit="handleFeedbackSubmit(event)">
+                <label for="complaintId">Complaint Tracking ID *</label>
+                <input type="text" id="complaintId" placeholder="e.g. RF-20260901-001" required>
+
+                <label>Overall Service Quality Rating *</label>
+                <div class="stars-container" id="starsGroup">
+                    <span class="star-item active" data-val="1" onclick="setRating(1)">★</span>
+                    <span class="star-item active" data-val="2" onclick="setRating(2)">★</span>
+                    <span class="star-item active" data-val="3" onclick="setRating(3)">★</span>
+                    <span class="star-item active" data-val="4" onclick="setRating(4)">★</span>
+                    <span class="star-item active" data-val="5" onclick="setRating(5)">★</span>
+                </div>
+                <input type="hidden" id="ratingValue" value="5">
+
+                <label>Resolution Speed & Response Time *</label>
+                <div class="speed-ratings" id="speedGroup">
+                    <button type="button" class="speed-btn" onclick="setSpeed(1, this)">1 - Very Slow</button>
+                    <button type="button" class="speed-btn" onclick="setSpeed(2, this)">2 - Delayed</button>
+                    <button type="button" class="speed-btn" onclick="setSpeed(3, this)">3 - Acceptable</button>
+                    <button type="button" class="speed-btn" onclick="setSpeed(4, this)">4 - Quick</button>
+                    <button type="button" class="speed-btn selected" onclick="setSpeed(5, this)">5 - Rapid & Efficient</button>
+                </div>
+                <input type="hidden" id="speedValue" value="5">
+
+                <label for="experience">General Service Experience *</label>
+                <select id="experience" required>
+                    <option value="Very Good" selected>Very Good (Highly Satisfied)</option>
+                    <option value="Good">Good (Issue Fixed Properly)</option>
+                    <option value="Average">Average (Met Minimum Expectations)</option>
+                    <option value="Poor">Poor (Incomplete or Low Quality Work)</option>
+                </select>
+
+                <label for="comment">Comments, Work Quality Review, or Suggestions *</label>
+                <textarea id="comment" placeholder="Share your observations regarding the road repair, pavement smoothness, clean-up, etc..." required></textarea>
+
+                <label for="citizenEmail">Your Email</label>
+                <input type="email" id="citizenEmail" placeholder="e.g. citizen@roadfix.ai">
+
+                <button type="submit" id="feedbackBtn" class="btn btn-primary btn-block">🚀 Submit Citizen Feedback</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <div class="copyright">
+            © 2026 RoadFix AI | Civic Issue Reporting & Tracking Platform | KIET
+        </div>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id') || localStorage.getItem('lastComplaintId');
+            if (id) {
+                document.getElementById('complaintId').value = id;
+            }
+
+            const user = RoadFix.getUser();
+            if (user && user.email) {
+                document.getElementById('citizenEmail').value = user.email;
+            }
+        });
+
+        function setRating(val) {
+            document.getElementById('ratingValue').value = val;
+            const stars = document.querySelectorAll('#starsGroup .star-item');
+            stars.forEach((s, idx) => {
+                if (idx < val) {
+                    s.classList.add('active');
+                } else {
+                    s.classList.remove('active');
+                }
+            });
+        }
+
+        function setSpeed(val, btn) {
+            document.getElementById('speedValue').value = val;
+            document.querySelectorAll('#speedGroup .speed-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+        }
+
+        async function handleFeedbackSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('feedbackBtn');
+            btn.disabled = true;
+
+            const user = RoadFix.getUser();
+            const email = document.getElementById('citizenEmail').value.trim();
+            const speedVal = document.getElementById('speedValue').value;
+            const speedText = speedVal === '5' ? 'Rapid & Efficient' : 
+                             (speedVal === '4' ? 'Quick' : 
+                             (speedVal === '3' ? 'Acceptable' : 'Delayed'));
+
+            const feedbackData = {
+                complaintId: document.getElementById('complaintId').value.trim(),
+                citizenName: (user && user.fullName) ? user.fullName : (email.includes('@') ? email.split('@')[0] : 'Citizen'),
+                citizenEmail: email,
+                rating: parseInt(document.getElementById('ratingValue').value, 10),
+                resolutionSpeed: speedText,
+                experience: document.getElementById('experience').value,
+                comments: document.getElementById('comment').value.trim(),
+                date: new Date().toISOString().split('T')[0]
+            };
+
+            await RoadFix.submitFeedback(feedbackData);
+
+            document.getElementById('feedbackForm').style.display = 'none';
+            document.getElementById('successBox').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
