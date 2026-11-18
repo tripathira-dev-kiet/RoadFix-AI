@@ -440,7 +440,7 @@
 
         async function loadDbStatus() {
             try {
-                const res = await fetch('http://localhost:8080/api/database/status');
+                const res = await fetch(`${API_BASE}/database/status`);
                 if (res.ok) {
                     const data = await res.json();
                     const el = document.getElementById('dbStatusEngine');
@@ -448,7 +448,7 @@
                         if (data.mongoConnected) {
                             el.innerHTML = '<span style="color:#10b981;">🟢 MongoDB (roadfix_db Connected)</span>';
                         } else {
-                            el.innerHTML = '<span style="color:#f59e0b;">🟠 Offline Cache (Start MongoDB on 27017 / Atlas)</span>';
+                            el.innerHTML = `<span style="color:#ef4444;">🔴 MongoDB Not Connected</span><br><small style="color:#b91c1c; font-size:11px; font-weight:normal;">⚠️ ${data.error || 'Check .env configuration'}</small>`;
                         }
                     }
                 }

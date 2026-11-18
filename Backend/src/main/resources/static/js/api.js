@@ -1,7 +1,10 @@
 // RoadFix AI - Simple & Clean JavaScript Manager
 // Works automatically with Backend OR in offline/standalone browser mode!
 
-const API_BASE = 'http://localhost:8080/api';
+// Auto-detect production domain or local fallback
+const API_BASE = (typeof window !== 'undefined' && window.location.origin && window.location.origin !== 'null' && !window.location.origin.startsWith('file:'))
+    ? `${window.location.origin}/api`
+    : 'http://localhost:8080/api';
 
 // Realistic AI Safety Inspection Engine Database
 const AI_PREDICTIONS = {

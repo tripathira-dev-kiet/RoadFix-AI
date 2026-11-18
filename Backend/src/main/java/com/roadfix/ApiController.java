@@ -42,6 +42,10 @@ public class ApiController {
         if (mongoTemplate == null) return false;
         try {
             String uri = System.getProperty("MONGODB_URI", "mongodb://localhost:27017/roadfix_db");
+            if (uri.contains("<") && uri.contains(">")) {
+                System.err.println(">>> [MONGODB AUTH ERROR] Connection string contains '<>' placeholder. Password must be filled in .env.");
+                return false;
+            }
             // If local URI, perform a non-blocking quick socket probe (400ms) to avoid thread stalling
             if (uri.contains("localhost") || uri.contains("127.0.0.1")) {
                 try (Socket socket = new Socket()) {
@@ -56,6 +60,7 @@ public class ApiController {
                 return ping != null;
             }
         } catch (Exception e) {
+            System.err.println(">>> [MONGODB ATLAS ERROR] " + e.getMessage());
             return false;
         }
     }
@@ -490,11 +495,21 @@ public class ApiController {
     @GetMapping("/database/status")
     public Map<String, Object> getDatabaseStatus() {
         boolean mongo = isMongoConnected();
+        String uri = System.getProperty("MONGODB_URI", "mongodb://localhost:27017/roadfix_db");
         Map<String, Object> status = new HashMap<>();
         status.put("status", "ACTIVE");
         status.put("connected", true);
         status.put("mongoConnected", mongo);
-        status.put("databaseEngine", mongo ? "MongoDB Database Engine (roadfix_db on port 27017 / Atlas)" : "Local Persistent JSON File (Offline Backup Mode)");
+
+        if (uri.contains("<") && uri.contains(">")) {
+            status.put("error", "MONGODB_URI has '<>' placeholder. Replace '<>' with your actual database password in .env (without brackets).");
+        } else if (!mongo && uri.contains("mongodb+srv://")) {
+            status.put("error", "Cannot connect to MongoDB Atlas. Check: 1) Password is correct in .env, 2) IP Access is set to 'Allow From Anywhere' (0.0.0.0/0) in Atlas.");
+        } else if (!mongo) {
+            status.put("error", "Local MongoDB server (port 27017) not running. Start mongod or configure MongoDB Atlas in .env");
+        }
+
+        status.put("databaseEngine", mongo ? "MongoDB Database Engine (roadfix_db Active)" : "Local Persistent JSON File (Offline Backup Mode)");
         status.put("databaseName", "roadfix_db");
         status.put("totalUsers", getAllUsers().size());
         status.put("totalComplaints", getComplaints().size());
