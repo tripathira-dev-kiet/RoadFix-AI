@@ -1,13 +1,20 @@
 package com.roadfix;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -17,7 +24,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @CrossOrigin(origins = "*")
 public class ApiController {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final MongoTemplate mongoTemplate;
     private final ObjectMapper mapper = new ObjectMapper();
 
     // In-memory / file fallback for offline backup
@@ -25,68 +32,66 @@ public class ApiController {
     private final List<User> usersFallback = new CopyOnWriteArrayList<>();
     private final List<Map<String, Object>> feedbacksFallback = new CopyOnWriteArrayList<>();
 
-    @Autowired
-    public ApiController(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    @Autowired(required = false)
+    public ApiController(MongoTemplate mongoTemplate) {
+        this.mongoTemplate = mongoTemplate;
         initDatabase();
     }
 
-    public boolean isMySqlConnected() {
-        if (jdbcTemplate == null) return false;
+    public boolean isMongoConnected() {
+        if (mongoTemplate == null) return false;
         try {
-            jdbcTemplate.queryForObject("SELECT 1", Integer.class);
-            return true;
+            String uri = System.getProperty("MONGODB_URI", "mongodb://localhost:27017/roadfix_db");
+            // If local URI, perform a non-blocking quick socket probe (400ms) to avoid thread stalling
+            if (uri.contains("localhost") || uri.contains("127.0.0.1")) {
+                try (Socket socket = new Socket()) {
+                    socket.connect(new InetSocketAddress("127.0.0.1", 27017), 400);
+                    return true;
+                } catch (Exception socketEx) {
+                    return false;
+                }
+            } else {
+                // Cloud / Atlas MongoDB URI
+                Document ping = mongoTemplate.executeCommand(new Document("ping", 1));
+                return ping != null;
+            }
         } catch (Exception e) {
             return false;
         }
     }
 
     private void initDatabase() {
-        if (isMySqlConnected()) {
+        if (isMongoConnected()) {
             try {
-                System.out.println(">>> [XAMPP MYSQL CONNECTED] Checking tables in roadfix_db on localhost:3306...");
+                System.out.println(">>> [MONGODB CONNECTED] Connected to database: " + mongoTemplate.getDb().getName());
 
-                // Relax constraints to ensure zero-failure insertions
-                try {
-                    jdbcTemplate.execute("ALTER TABLE users MODIFY COLUMN role VARCHAR(50) NOT NULL DEFAULT 'CITIZEN'");
-                    jdbcTemplate.execute("ALTER TABLE users MODIFY COLUMN phone VARCHAR(50) DEFAULT NULL");
-                    jdbcTemplate.execute("ALTER TABLE users MODIFY COLUMN full_name VARCHAR(150) NOT NULL");
-                    jdbcTemplate.execute("ALTER TABLE users MODIFY COLUMN department_name VARCHAR(150) DEFAULT NULL");
-
-                    jdbcTemplate.execute("ALTER TABLE issues MODIFY COLUMN category VARCHAR(100) NOT NULL");
-                    jdbcTemplate.execute("ALTER TABLE issues MODIFY COLUMN status VARCHAR(50) NOT NULL DEFAULT 'SUBMITTED'");
-                    jdbcTemplate.execute("ALTER TABLE issues MODIFY COLUMN priority VARCHAR(50) NOT NULL DEFAULT 'MEDIUM'");
-                    jdbcTemplate.execute("ALTER TABLE issues MODIFY COLUMN photo_url LONGTEXT");
-
-                    jdbcTemplate.execute("ALTER TABLE work_proofs MODIFY COLUMN before_photo_url LONGTEXT");
-                    jdbcTemplate.execute("ALTER TABLE work_proofs MODIFY COLUMN after_photo_url LONGTEXT NOT NULL");
-
-                    jdbcTemplate.execute("ALTER TABLE feedbacks MODIFY COLUMN issue_id BIGINT(20) NULL");
-                    jdbcTemplate.execute("ALTER TABLE feedbacks ADD COLUMN IF NOT EXISTS tracking_number VARCHAR(50) NULL");
-                    jdbcTemplate.execute("ALTER TABLE feedbacks ADD COLUMN IF NOT EXISTS citizen_name VARCHAR(150) NULL");
-                    jdbcTemplate.execute("ALTER TABLE feedbacks ADD COLUMN IF NOT EXISTS citizen_email VARCHAR(150) NULL");
-                } catch (Exception alterEx) {
-                    System.out.println("Schema check note: " + alterEx.getMessage());
+                // Seed default system administrative accounts if users collection is empty
+                long userCount = mongoTemplate.count(new Query(), "users");
+                if (userCount == 0) {
+                    System.out.println(">>> [MONGODB SEED] Seeding essential system credentials in MongoDB 'users' collection...");
+                    mongoTemplate.save(new User("USR-101", "Municipal Administrator", "admin@roadfix.ai", "+91 9811002233", "ADMIN", "Administration", "admin123", LocalDate.now().toString()), "users");
+                    mongoTemplate.save(new User("USR-102", "Inspector Rajesh Kumar", "dept.roads@roadfix.ai", "+91 9822334455", "STAFF", "Roads & Infrastructure", "dept123", LocalDate.now().toString()), "users");
+                    mongoTemplate.save(new User("USR-103", "Aarav Sharma", "citizen@roadfix.ai", "+91 9844556677", "CITIZEN", null, "citizen123", LocalDate.now().toString()), "users");
+                    System.out.println(">>> [MONGODB SEED COMPLETE] Default accounts created in MongoDB.");
+                } else {
+                    System.out.println(">>> [MONGODB READY] 'users' collection contains " + userCount + " accounts.");
                 }
 
-                // Drop carousel_slides from database as user requested
-                try {
-                    jdbcTemplate.execute("DROP TABLE IF EXISTS carousel_slides");
-                } catch (Exception ignored) {}
+                long issueCount = mongoTemplate.count(new Query(), "issues");
+                System.out.println(">>> [MONGODB READY] 'issues' collection contains " + issueCount + " complaints.");
 
-                System.out.println(">>> [XAMPP MYSQL READY] Tables in roadfix_db active: users, issues, feedbacks, work_proofs");
             } catch (Exception e) {
-                System.err.println("MySQL table init error: " + e.getMessage());
+                System.err.println("MongoDB init error: " + e.getMessage());
             }
         } else {
-            System.out.println(">>> [OFFLINE MODE] MySQL not connected, using fallback storage.");
+            System.out.println(">>> [OFFLINE / FALLBACK MODE] MongoDB is not running on localhost:27017. Using local fallback cache. (Start MongoDB or configure Atlas in .env to use MongoDB)");
         }
 
         loadFallbackDatabase();
     }
 
     // =========================================================================
-    // 1. USER AUTHENTICATION & REGISTRATION (XAMPP MYSQL: users table)
+    // 1. USER AUTHENTICATION & REGISTRATION (MongoDB: users collection)
     // =========================================================================
 
     @PostMapping("/auth/register")
@@ -106,36 +111,24 @@ public class ApiController {
             return ResponseEntity.badRequest().body(err);
         }
 
-        if (isMySqlConnected()) {
+        if (isMongoConnected()) {
             try {
-                // Check if user email already exists in XAMPP MySQL
-                Integer exists = jdbcTemplate.queryForObject(
-                    "SELECT COUNT(*) FROM users WHERE LOWER(email) = LOWER(?)",
-                    Integer.class,
-                    email
-                );
+                // Check if user email already exists in MongoDB
+                Query query = new Query(Criteria.where("email").regex("^" + email + "$", "i"));
+                User existing = mongoTemplate.findOne(query, User.class, "users");
 
-                if (exists != null && exists > 0) {
+                if (existing != null) {
                     Map<String, Object> err = new HashMap<>();
                     err.put("success", false);
-                    err.put("message", "User with email '" + email + "' is already registered in XAMPP database. Please log in.");
+                    err.put("message", "User with email '" + email + "' is already registered in MongoDB database. Please log in.");
                     return ResponseEntity.status(HttpStatus.CONFLICT).body(err);
                 }
 
-                // Insert user into XAMPP MySQL users table
-                jdbcTemplate.update(
-                    "INSERT INTO users (full_name, email, password, phone, role, department_name, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())",
-                    fullName, email, password, phone, role, departmentName
-                );
-
-                Long generatedId = jdbcTemplate.queryForObject(
-                    "SELECT id FROM users WHERE LOWER(email) = LOWER(?)",
-                    Long.class,
-                    email
-                );
+                long totalUsers = mongoTemplate.count(new Query(), "users");
+                String userId = "USR-" + (100 + totalUsers + 1);
 
                 User newUser = new User(
-                    "USR-" + generatedId,
+                    userId,
                     fullName,
                     email,
                     phone,
@@ -145,7 +138,8 @@ public class ApiController {
                     LocalDate.now().toString()
                 );
 
-                System.out.println(">>> [MYSQL REGISTER SUCCESS] Inserted user into roadfix_db.users | Email: " + email + " | Role: " + role + " | ID: " + generatedId);
+                mongoTemplate.save(newUser, "users");
+                System.out.println(">>> [MONGODB REGISTER SUCCESS] Saved user to collection 'users' | Email: " + email + " | Role: " + role + " | ID: " + userId);
 
                 // Mirror to fallback cache
                 usersFallback.add(newUser);
@@ -153,13 +147,12 @@ public class ApiController {
 
                 Map<String, Object> res = new HashMap<>();
                 res.put("success", true);
-                res.put("message", "Account registered successfully in XAMPP MySQL database (roadfix_db)!");
+                res.put("message", "Account registered successfully in MongoDB database (roadfix_db)!");
                 res.put("user", newUser);
                 return ResponseEntity.ok(res);
 
             } catch (Exception e) {
-                System.err.println("MySQL register error: " + e.getMessage());
-                e.printStackTrace();
+                System.err.println("MongoDB register error: " + e.getMessage());
             }
         }
 
@@ -190,25 +183,21 @@ public class ApiController {
         String email = body.get("email") != null ? body.get("email").toString().trim().toLowerCase() : "";
         String password = body.get("password") != null ? body.get("password").toString().trim() : "";
 
-        // 1. Check in XAMPP MySQL
-        if (isMySqlConnected()) {
+        // 1. Check in MongoDB
+        if (isMongoConnected()) {
             try {
-                List<Map<String, Object>> rows = jdbcTemplate.queryForList(
-                    "SELECT id, full_name, email, password, role, department_name FROM users WHERE LOWER(email) = LOWER(?)",
-                    email
-                );
+                Query query = new Query(Criteria.where("email").regex("^" + email + "$", "i"));
+                User user = mongoTemplate.findOne(query, User.class, "users");
 
-                if (!rows.isEmpty()) {
-                    Map<String, Object> u = rows.get(0);
-                    String dbPass = u.get("password") != null ? u.get("password").toString() : "";
-                    if (dbPass.equals(password)) {
+                if (user != null) {
+                    if (password.equals(user.getPassword())) {
                         Map<String, Object> res = new HashMap<>();
                         res.put("success", true);
-                        res.put("message", "Login successful via XAMPP MySQL database!");
-                        res.put("user", u);
-                        res.put("email", u.get("email"));
-                        res.put("role", u.get("role"));
-                        res.put("fullName", u.get("full_name"));
+                        res.put("message", "Login successful via MongoDB database!");
+                        res.put("user", user);
+                        res.put("email", user.getEmail());
+                        res.put("role", user.getRole());
+                        res.put("fullName", user.getFullName());
                         return ResponseEntity.ok(res);
                     } else {
                         Map<String, Object> err = new HashMap<>();
@@ -218,7 +207,7 @@ public class ApiController {
                     }
                 }
             } catch (Exception e) {
-                System.err.println("MySQL login query error: " + e.getMessage());
+                System.err.println("MongoDB login query error: " + e.getMessage());
             }
         }
 
@@ -252,78 +241,34 @@ public class ApiController {
 
     @GetMapping("/auth/users")
     public List<User> getAllUsers() {
-        if (isMySqlConnected()) {
+        if (isMongoConnected()) {
             try {
-                List<User> list = new ArrayList<>();
-                jdbcTemplate.query(
-                    "SELECT id, full_name, email, phone, role, department_name, created_at FROM users ORDER BY id ASC",
-                    rs -> {
-                        String createdAt = rs.getString("created_at");
-                        if (createdAt != null && createdAt.length() >= 10) {
-                            createdAt = createdAt.substring(0, 10);
-                        }
-                        User u = new User(
-                            "USR-" + rs.getLong("id"),
-                            rs.getString("full_name"),
-                            rs.getString("email"),
-                            rs.getString("phone"),
-                            rs.getString("role"),
-                            rs.getString("department_name"),
-                            "***",
-                            createdAt != null ? createdAt : LocalDate.now().toString()
-                        );
-                        list.add(u);
-                    }
-                );
+                List<User> list = mongoTemplate.findAll(User.class, "users");
+                // Mask password before returning
+                for (User u : list) {
+                    u.setPassword("***");
+                }
                 return list;
             } catch (Exception e) {
-                System.err.println("MySQL get users error: " + e.getMessage());
+                System.err.println("MongoDB get users error: " + e.getMessage());
             }
         }
         return usersFallback;
     }
 
     // =========================================================================
-    // 2. COMPLAINTS / ISSUES (XAMPP MYSQL: issues & work_proofs tables)
+    // 2. COMPLAINTS / ISSUES (MongoDB: issues & work_proofs collections)
     // =========================================================================
 
     @GetMapping("/complaints")
     public List<Complaint> getComplaints() {
-        if (isMySqlConnected()) {
+        if (isMongoConnected()) {
             try {
-                List<Complaint> list = new ArrayList<>();
-                String sql = "SELECT i.tracking_number, i.title, i.category, i.address, i.priority, i.severity_score, " +
-                             "i.description, i.status, i.assigned_department, i.photo_url, i.ai_detected_category, " +
-                             "i.ai_confidence, i.ai_hazard_notes, i.created_at, " +
-                             "w.after_photo_url, w.completion_notes " +
-                             "FROM issues i " +
-                             "LEFT JOIN work_proofs w ON i.id = w.issue_id " +
-                             "ORDER BY i.id DESC";
-
-                jdbcTemplate.query(sql, rs -> {
-                    Complaint c = new Complaint();
-                    c.setId(rs.getString("tracking_number"));
-                    c.setTitle(rs.getString("title"));
-                    c.setCategory(rs.getString("category"));
-                    c.setLocation(rs.getString("address"));
-                    c.setSeverity(rs.getString("priority"));
-                    c.setDescription(rs.getString("description"));
-                    c.setStatus(rs.getString("status"));
-                    c.setDepartment(rs.getString("assigned_department"));
-                    c.setPhotoUrl(rs.getString("photo_url"));
-                    c.setAiDetected(rs.getString("ai_detected_category"));
-                    Double conf = rs.getDouble("ai_confidence");
-                    c.setAiConfidence(conf != null && conf > 0 ? conf + "%" : "95%");
-                    c.setAiHazard(rs.getString("ai_hazard_notes"));
-                    c.setRepairPhotoUrl(rs.getString("after_photo_url"));
-                    c.setRepairNotes(rs.getString("completion_notes"));
-                    String ca = rs.getString("created_at");
-                    c.setDate(ca != null && ca.length() >= 10 ? ca.substring(0, 10) : LocalDate.now().toString());
-                    list.add(c);
-                });
+                Query query = new Query().with(Sort.by(Sort.Direction.DESC, "date", "_id"));
+                List<Complaint> list = mongoTemplate.find(query, Complaint.class, "issues");
                 return list;
             } catch (Exception e) {
-                System.err.println("MySQL get complaints error: " + e.getMessage());
+                System.err.println("MongoDB get complaints error: " + e.getMessage());
             }
         }
         return complaintsFallback;
@@ -332,7 +277,8 @@ public class ApiController {
     @PostMapping("/complaints")
     public Complaint createComplaint(@RequestBody Complaint complaint) {
         if (complaint.getId() == null || complaint.getId().isBlank()) {
-            complaint.setId("RF-" + (100 + (isMySqlConnected() ? getComplaints().size() + 1 : complaintsFallback.size() + 1)));
+            int seq = (isMongoConnected() ? (int) mongoTemplate.count(new Query(), "issues") : complaintsFallback.size()) + 1;
+            complaint.setId("RF-" + (100 + seq));
         }
         if (complaint.getStatus() == null || complaint.getStatus().isBlank()) {
             complaint.setStatus("SUBMITTED");
@@ -344,69 +290,30 @@ public class ApiController {
             complaint.setDepartment("Pending Assignment");
         }
         if (complaint.getPhotoUrl() == null || complaint.getPhotoUrl().isBlank()) {
-            complaint.setPhotoUrl("https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80");
+            complaint.setPhotoUrl("https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=1200&q=80");
         }
 
-        if (isMySqlConnected()) {
+        if (isMongoConnected()) {
             try {
-                Integer count = jdbcTemplate.queryForObject(
-                    "SELECT COUNT(*) FROM issues WHERE tracking_number = ?",
-                    Integer.class,
-                    complaint.getId()
-                );
+                Query query = new Query(Criteria.where("id").is(complaint.getId()));
+                Complaint existing = mongoTemplate.findOne(query, Complaint.class, "issues");
 
-                double confVal = 95.0;
-                if (complaint.getAiConfidence() != null) {
-                    try {
-                        confVal = Double.parseDouble(complaint.getAiConfidence().replace("%", "").trim());
-                    } catch (Exception ignored) {}
-                }
-
-                if (count != null && count > 0) {
-                    jdbcTemplate.update(
-                        "UPDATE issues SET title = ?, description = ?, category = ?, status = ?, priority = ?, address = ?, photo_url = ?, assigned_department = ? WHERE tracking_number = ?",
-                        complaint.getTitle() != null ? complaint.getTitle() : "Civic Hazard Report",
-                        complaint.getDescription() != null ? complaint.getDescription() : "",
-                        complaint.getCategory() != null ? complaint.getCategory() : "POTHOLE",
-                        complaint.getStatus(),
-                        complaint.getSeverity() != null ? complaint.getSeverity() : "MEDIUM",
-                        complaint.getLocation() != null ? complaint.getLocation() : "City Road",
-                        complaint.getPhotoUrl(),
-                        complaint.getDepartment(),
-                        complaint.getId()
-                    );
+                if (existing != null) {
+                    mongoTemplate.save(complaint, "issues");
+                    System.out.println(">>> [MONGODB ISSUE UPDATED] Collection 'issues' | ID: " + complaint.getId());
                 } else {
-                    jdbcTemplate.update(
-                        "INSERT INTO issues (tracking_number, title, description, category, status, priority, severity_score, latitude, longitude, address, photo_url, ai_detected_category, ai_confidence, ai_hazard_notes, assigned_department, created_at) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())",
-                        complaint.getId(),
-                        complaint.getTitle() != null ? complaint.getTitle() : "Civic Hazard Report",
-                        complaint.getDescription() != null ? complaint.getDescription() : "",
-                        complaint.getCategory() != null ? complaint.getCategory() : "POTHOLE",
-                        complaint.getStatus(),
-                        complaint.getSeverity() != null ? complaint.getSeverity() : "MEDIUM",
-                        complaint.getSeverity() != null && complaint.getSeverity().equalsIgnoreCase("HIGH") ? 85 : 50,
-                        28.6139,
-                        77.2090,
-                        complaint.getLocation() != null ? complaint.getLocation() : "City Road",
-                        complaint.getPhotoUrl(),
-                        complaint.getAiDetected() != null ? complaint.getAiDetected() : "Road Surface Hazard",
-                        confVal,
-                        complaint.getAiHazard() != null ? complaint.getAiHazard() : "High skidding risk",
-                        complaint.getDepartment()
-                    );
+                    mongoTemplate.insert(complaint, "issues");
+                    System.out.println(">>> [MONGODB ISSUE INSERTED] Collection 'issues' | Tracking ID: " + complaint.getId() + " | Title: " + complaint.getTitle());
                 }
-                System.out.println(">>> [MYSQL ISSUE SAVED] roadfix_db.issues | Tracking ID: " + complaint.getId() + " | Title: " + complaint.getTitle());
             } catch (Exception e) {
-                System.err.println("MySQL createComplaint error: " + e.getMessage());
-                e.printStackTrace();
+                System.err.println("MongoDB createComplaint error: " + e.getMessage());
             }
         }
 
         // Mirror to fallback
         boolean exists = false;
         for (int i = 0; i < complaintsFallback.size(); i++) {
-            if (complaintsFallback.get(i).getId().equalsIgnoreCase(complaint.getId())) {
+            if (complaintsFallback.get(i).getId() != null && complaintsFallback.get(i).getId().equalsIgnoreCase(complaint.getId())) {
                 complaintsFallback.set(i, complaint);
                 exists = true;
                 break;
@@ -421,8 +328,20 @@ public class ApiController {
 
     @GetMapping("/complaints/{id}")
     public ResponseEntity<?> getComplaintById(@PathVariable String id) {
-        return getComplaints().stream()
-                .filter(c -> c.getId().equalsIgnoreCase(id))
+        if (isMongoConnected()) {
+            try {
+                Query query = new Query(Criteria.where("id").is(id));
+                Complaint c = mongoTemplate.findOne(query, Complaint.class, "issues");
+                if (c != null) {
+                    return ResponseEntity.ok(c);
+                }
+            } catch (Exception e) {
+                System.err.println("MongoDB getComplaintById error: " + e.getMessage());
+            }
+        }
+
+        return complaintsFallback.stream()
+                .filter(c -> c.getId() != null && c.getId().equalsIgnoreCase(id))
                 .findFirst()
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -430,70 +349,51 @@ public class ApiController {
 
     @PutMapping("/complaints/{id}")
     public ResponseEntity<?> updateComplaint(@PathVariable String id, @RequestBody Map<String, String> updates) {
-        if (isMySqlConnected()) {
+        if (isMongoConnected()) {
             try {
-                if (updates.containsKey("status") || updates.containsKey("department")) {
-                    StringBuilder sql = new StringBuilder("UPDATE issues SET ");
-                    List<Object> params = new ArrayList<>();
-                    if (updates.containsKey("status")) {
-                        sql.append("status = ?, ");
-                        params.add(updates.get("status"));
-                    }
-                    if (updates.containsKey("department")) {
-                        sql.append("assigned_department = ?, ");
-                        params.add(updates.get("department"));
-                    }
-                    sql.delete(sql.length() - 2, sql.length());
-                    sql.append(" WHERE tracking_number = ?");
-                    params.add(id);
-                    jdbcTemplate.update(sql.toString(), params.toArray());
+                Query query = new Query(Criteria.where("id").is(id));
+                Update update = new Update();
+
+                if (updates.containsKey("status")) {
+                    update.set("status", updates.get("status"));
+                }
+                if (updates.containsKey("department")) {
+                    update.set("department", updates.get("department"));
+                }
+                if (updates.containsKey("repairPhotoUrl")) {
+                    update.set("repairPhotoUrl", updates.get("repairPhotoUrl"));
+                }
+                if (updates.containsKey("repairNotes")) {
+                    update.set("repairNotes", updates.get("repairNotes"));
                 }
 
-                // If work proof / repair photo submitted by staff
+                mongoTemplate.updateFirst(query, update, "issues");
+
+                // Also record in work_proofs collection if repair photo provided
                 if (updates.containsKey("repairPhotoUrl") || updates.containsKey("repairNotes")) {
-                    try {
-                        Long issueId = jdbcTemplate.queryForObject(
-                            "SELECT id FROM issues WHERE tracking_number = ?",
-                            Long.class,
-                            id
-                        );
-                        if (issueId != null) {
-                            Integer wpCount = jdbcTemplate.queryForObject(
-                                "SELECT COUNT(*) FROM work_proofs WHERE issue_id = ?",
-                                Integer.class,
-                                issueId
-                            );
-                            if (wpCount != null && wpCount > 0) {
-                                jdbcTemplate.update(
-                                    "UPDATE work_proofs SET after_photo_url = ?, completion_notes = ? WHERE issue_id = ?",
-                                    updates.getOrDefault("repairPhotoUrl", ""),
-                                    updates.getOrDefault("repairNotes", "Repair completed flush with hot-mix asphalt."),
-                                    issueId
-                                );
-                            } else {
-                                jdbcTemplate.update(
-                                    "INSERT INTO work_proofs (issue_id, officer_name, department_name, after_photo_url, completion_notes, resolved_at) " +
-                                    "VALUES (?, ?, ?, ?, ?, NOW())",
-                                    issueId,
-                                    "Inspector Field Squad",
-                                    updates.getOrDefault("department", "Roads & Infrastructure"),
-                                    updates.getOrDefault("repairPhotoUrl", "https://images.unsplash.com/photo-1508873696983-2df570464753?auto=format&fit=crop&w=800&q=80"),
-                                    updates.getOrDefault("repairNotes", "Repair completed flush with hot-mix asphalt.")
-                                );
-                            }
-                        }
-                    } catch (Exception ex) {
-                        System.err.println("Work proof save error: " + ex.getMessage());
-                    }
+                    Map<String, Object> proof = new HashMap<>();
+                    proof.put("trackingNumber", id);
+                    proof.put("officerName", updates.getOrDefault("officerName", "Field Staff Squad"));
+                    proof.put("departmentName", updates.getOrDefault("department", "Roads & Infrastructure"));
+                    proof.put("afterPhotoUrl", updates.getOrDefault("repairPhotoUrl", "https://images.unsplash.com/photo-1508873696983-2df570464753?w=1200&auto=format&fit=crop"));
+                    proof.put("completionNotes", updates.getOrDefault("repairNotes", "Repair work completed with hot-mix asphalt compaction."));
+                    proof.put("resolvedAt", LocalDate.now().toString());
+                    mongoTemplate.save(proof, "work_proofs");
+                    System.out.println(">>> [MONGODB WORK PROOF] Saved work proof for issue: " + id);
+                }
+
+                Complaint updated = mongoTemplate.findOne(query, Complaint.class, "issues");
+                if (updated != null) {
+                    return ResponseEntity.ok(updated);
                 }
             } catch (Exception e) {
-                System.err.println("MySQL update complaint error: " + e.getMessage());
+                System.err.println("MongoDB updateComplaint error: " + e.getMessage());
             }
         }
 
         // Fallback update
         for (Complaint c : complaintsFallback) {
-            if (c.getId().equalsIgnoreCase(id)) {
+            if (c.getId() != null && c.getId().equalsIgnoreCase(id)) {
                 if (updates.containsKey("status")) c.setStatus(updates.get("status"));
                 if (updates.containsKey("department")) c.setDepartment(updates.get("department"));
                 if (updates.containsKey("repairNotes")) c.setRepairNotes(updates.get("repairNotes"));
@@ -507,7 +407,7 @@ public class ApiController {
     }
 
     // =========================================================================
-    // 3. CITIZEN FEEDBACKS (XAMPP MYSQL: feedbacks table)
+    // 3. CITIZEN FEEDBACKS (MongoDB: feedbacks collection)
     // =========================================================================
 
     @PostMapping("/feedback")
@@ -522,60 +422,50 @@ public class ApiController {
         String comment = body.get("comments") != null ? body.get("comments").toString() : 
                         (body.get("comment") != null ? body.get("comment").toString() : "Good service.");
 
-        if (isMySqlConnected()) {
-            try {
-                Long issueId = null;
-                if (tracking != null && !tracking.isEmpty()) {
-                    try {
-                        issueId = jdbcTemplate.queryForObject("SELECT id FROM issues WHERE tracking_number = ?", Long.class, tracking);
-                    } catch (Exception ignored) {}
-                }
+        Map<String, Object> doc = new HashMap<>(body);
+        doc.put("trackingNumber", tracking);
+        doc.put("complaintId", tracking);
+        doc.put("citizenName", cName);
+        doc.put("citizenEmail", cEmail);
+        doc.put("rating", rating);
+        doc.put("resolutionSpeed", rating >= 5 ? "Rapid & Efficient" : "Quick");
+        doc.put("comments", comment);
+        doc.put("date", LocalDate.now().toString());
 
-                jdbcTemplate.update(
-                    "INSERT INTO feedbacks (issue_id, tracking_number, citizen_name, citizen_email, rating, speed_rating, comment, submitted_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())",
-                    issueId, tracking, cName, cEmail, rating, rating, comment
-                );
-                System.out.println(">>> [MYSQL FEEDBACK SAVED] roadfix_db.feedbacks | Tracking: " + tracking + " | Citizen: " + cName + " | Rating: " + rating);
+        if (isMongoConnected()) {
+            try {
+                mongoTemplate.save(doc, "feedbacks");
+                System.out.println(">>> [MONGODB FEEDBACK SAVED] Collection 'feedbacks' | Tracking: " + tracking + " | Citizen: " + cName + " | Rating: " + rating);
             } catch (Exception e) {
-                System.err.println("MySQL submitFeedback error: " + e.getMessage());
+                System.err.println("MongoDB submitFeedback error: " + e.getMessage());
             }
         }
 
         // Mirror to fallback
-        body.put("date", LocalDate.now().toString());
-        feedbacksFallback.add(0, body);
+        feedbacksFallback.add(0, doc);
         saveFallbackDatabase();
 
         Map<String, Object> res = new HashMap<>();
         res.put("success", true);
-        res.put("message", "Feedback recorded successfully in XAMPP MySQL database!");
+        res.put("message", "Feedback recorded successfully in MongoDB database (roadfix_db)!");
         return res;
     }
 
     @GetMapping("/feedback")
     public List<Map<String, Object>> getFeedbacks() {
-        if (isMySqlConnected()) {
+        if (isMongoConnected()) {
             try {
-                List<Map<String, Object>> list = new ArrayList<>();
-                jdbcTemplate.query(
-                    "SELECT id, tracking_number, citizen_name, citizen_email, rating, speed_rating, comment, submitted_at FROM feedbacks ORDER BY id DESC",
-                    rs -> {
-                        Map<String, Object> f = new HashMap<>();
-                        f.put("id", rs.getLong("id"));
-                        f.put("complaintId", rs.getString("tracking_number") != null ? rs.getString("tracking_number") : "General");
-                        f.put("citizenName", rs.getString("citizen_name") != null ? rs.getString("citizen_name") : "Citizen");
-                        f.put("citizenEmail", rs.getString("citizen_email"));
-                        f.put("rating", rs.getInt("rating"));
-                        f.put("resolutionSpeed", rs.getInt("speed_rating") >= 5 ? "Rapid & Efficient" : "Quick");
-                        f.put("comments", rs.getString("comment"));
-                        String sa = rs.getString("submitted_at");
-                        f.put("date", sa != null && sa.length() >= 10 ? sa.substring(0, 10) : LocalDate.now().toString());
-                        list.add(f);
-                    }
-                );
-                return list;
+                Query query = new Query().with(Sort.by(Sort.Direction.DESC, "date", "_id"));
+                List<Map> list = mongoTemplate.find(query, Map.class, "feedbacks");
+                List<Map<String, Object>> result = new ArrayList<>();
+                for (Map m : list) {
+                    Map<String, Object> item = new HashMap<>();
+                    item.putAll(m);
+                    result.add(item);
+                }
+                return result;
             } catch (Exception e) {
-                System.err.println("MySQL get feedbacks error: " + e.getMessage());
+                System.err.println("MongoDB get feedbacks error: " + e.getMessage());
             }
         }
         return feedbacksFallback;
@@ -599,18 +489,18 @@ public class ApiController {
 
     @GetMapping("/database/status")
     public Map<String, Object> getDatabaseStatus() {
-        boolean mySql = isMySqlConnected();
+        boolean mongo = isMongoConnected();
         Map<String, Object> status = new HashMap<>();
         status.put("status", "ACTIVE");
         status.put("connected", true);
-        status.put("mySqlConnected", mySql);
-        status.put("databaseEngine", mySql ? "XAMPP MySQL / MariaDB (roadfix_db on localhost:3306)" : "Local Persistent JSON File (Offline Fallback)");
-        status.put("phpMyAdmin", "http://localhost/phpmyadmin/index.php?route=/database/structure&db=roadfix_db");
+        status.put("mongoConnected", mongo);
+        status.put("databaseEngine", mongo ? "MongoDB Database Engine (roadfix_db on port 27017 / Atlas)" : "Local Persistent JSON File (Offline Backup Mode)");
+        status.put("databaseName", "roadfix_db");
         status.put("totalUsers", getAllUsers().size());
         status.put("totalComplaints", getComplaints().size());
         status.put("totalFeedbacks", getFeedbacks().size());
-        status.put("activeStore", mySql ? "XAMPP MySQL: roadfix_db (Live Production)" : "database/database.json");
-        status.put("tables", Arrays.asList("users", "issues", "feedbacks", "work_proofs"));
+        status.put("activeStore", mongo ? "MongoDB Collections: users, issues, feedbacks, work_proofs" : "database/database.json");
+        status.put("collections", Arrays.asList("users", "issues", "feedbacks", "work_proofs"));
         status.put("lastCheck", new Date().toString());
         return status;
     }

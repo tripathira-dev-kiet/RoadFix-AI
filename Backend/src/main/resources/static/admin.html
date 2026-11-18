@@ -227,23 +227,20 @@
             </div>
         </div>
 
-        <!-- XAMPP MySQL Live Database Connection Card -->
+        <!-- MongoDB Live Database Connection Card -->
         <div class="card-box" style="padding:24px; margin-top:30px; border-left: 4px solid #10b981;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
                 <div>
                     <h2 style="font-size:18px; color:var(--primary); display:flex; align-items:center; gap:8px;">
-                        <span>🗄️</span> XAMPP MySQL Live Database (<code style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px; font-size:14px;">roadfix_db</code>)
+                        <span>🍃</span> MongoDB Database (<code style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px; font-size:14px;">roadfix_db</code>)
                     </h2>
                     <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">
-                        Connected to MySQL on <b>localhost:3306</b>. All registered users, citizen issues, repair proofs, feedbacks, and carousel slides are stored directly in XAMPP.
+                        Connected via Spring Data MongoDB using configuration from <b>.env</b> file. All registered users, citizen issues, repair proofs, and feedbacks are stored in document collections.
                     </p>
                 </div>
                 <div style="display:flex; gap:10px; align-items:center;">
-                    <a href="http://localhost/phpmyadmin/index.php?route=/database/structure&db=roadfix_db" target="_blank" class="btn btn-secondary btn-sm" style="display:inline-flex; align-items:center; gap:6px;">
-                        <span>🌐</span> Open phpMyAdmin
-                    </a>
                     <button type="button" class="btn btn-primary btn-sm" onclick="loadDbStatus()">
-                        🔄 Check Live MySQL
+                        🔄 Check Live MongoDB
                     </button>
                 </div>
             </div>
@@ -251,19 +248,19 @@
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px; margin-top:16px;">
                 <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:8px; padding:14px;">
                     <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Database Engine</div>
-                    <div id="dbStatusEngine" style="font-size:14px; font-weight:700; color:#10b981; margin-top:4px;">🟢 XAMPP MySQL (Connected)</div>
+                    <div id="dbStatusEngine" style="font-size:14px; font-weight:700; color:#10b981; margin-top:4px;">🟢 MongoDB (Connected)</div>
                 </div>
                 <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:8px; padding:14px;">
-                    <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Database Name & Port</div>
-                    <div style="font-size:14px; font-weight:700; color:var(--primary); margin-top:4px;">roadfix_db : 3306</div>
+                    <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Database Name & Config</div>
+                    <div style="font-size:14px; font-weight:700; color:var(--primary); margin-top:4px;">roadfix_db (.env configured)</div>
                 </div>
                 <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:8px; padding:14px;">
-                    <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Active SQL Tables</div>
-                    <div style="font-size:14px; font-weight:700; color:var(--primary); margin-top:4px;">users, issues, feedbacks, work_proofs, carousel_slides</div>
+                    <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Active Mongo Collections</div>
+                    <div style="font-size:14px; font-weight:700; color:var(--primary); margin-top:4px;">users, issues, feedbacks, work_proofs</div>
                 </div>
                 <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:8px; padding:14px;">
-                    <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">SQL Schema File</div>
-                    <div style="font-size:14px; font-weight:700; color:var(--primary); margin-top:4px;">database/schema.sql</div>
+                    <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Environment File</div>
+                    <div style="font-size:14px; font-weight:700; color:var(--primary); margin-top:4px;">.env (MONGODB_URI)</div>
                 </div>
             </div>
         </div>
@@ -448,10 +445,10 @@
                     const data = await res.json();
                     const el = document.getElementById('dbStatusEngine');
                     if (el) {
-                        if (data.mySqlConnected) {
-                            el.innerHTML = '<span style="color:#10b981;">🟢 XAMPP MySQL (roadfix_db Connected)</span>';
+                        if (data.mongoConnected) {
+                            el.innerHTML = '<span style="color:#10b981;">🟢 MongoDB (roadfix_db Connected)</span>';
                         } else {
-                            el.innerHTML = '<span style="color:#f59e0b;">🟠 Local Cache (Start MySQL in XAMPP)</span>';
+                            el.innerHTML = '<span style="color:#f59e0b;">🟠 Offline Cache (Start MongoDB on 27017 / Atlas)</span>';
                         }
                     }
                 }
@@ -461,12 +458,12 @@
         async function loadStats() {
             try {
                 const s = await RoadFix.getStats();
-                document.getElementById('statTotal').innerText = s.totalIssues || 3;
+                document.getElementById('statTotal').innerText = s.totalIssues || 0;
                 document.getElementById('statSubmitted').innerText = s.submitted || 0;
-                document.getElementById('statAssigned').innerText = (s.inProgress || 1);
-                document.getElementById('statInProgress').innerText = (s.inProgress || 1);
-                document.getElementById('statResolved').innerText = s.resolved || 1;
-                document.getElementById('statAvgRating').innerText = `★ ${s.averageRating || '4.9'}`;
+                document.getElementById('statAssigned').innerText = (s.inProgress || 0);
+                document.getElementById('statInProgress').innerText = (s.inProgress || 0);
+                document.getElementById('statResolved').innerText = s.resolved || 0;
+                document.getElementById('statAvgRating').innerText = s.totalIssues > 0 ? `★ ${s.averageRating || '5.0'}` : '★ 5.0';
             } catch (e) {
                 console.error(e);
             }

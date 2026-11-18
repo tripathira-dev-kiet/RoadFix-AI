@@ -42,86 +42,29 @@ const AI_PREDICTIONS = {
     }
 };
 
-// Initial sample complaints for immediate demo
-const INITIAL_COMPLAINTS = [
-    {
-        id: "RF-101",
-        title: "Deep Pothole on MG Road",
-        category: "Pothole",
-        location: "MG Road near Metro Pillar 42",
-        severity: "High",
-        description: "Large crater causing severe vehicle skidding and slowdown.",
-        status: "RESOLVED",
-        department: "Roads & Infrastructure",
-        photoUrl: "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80",
-        aiDetected: "Road Surface Pothole (Depth: ~14 cm)",
-        aiConfidence: "96.4%",
-        aiHazard: "High Hazard: Severe two-wheeler skidding risk & vehicle suspension damage. Immediate cold-mix asphalt patch required.",
-        repairPhotoUrl: "https://images.unsplash.com/photo-1508873696983-2df570464753?auto=format&fit=crop&w=800&q=80",
-        repairNotes: "Pothole excavated, filled with bitumen hot-mix and leveled with compaction roller.",
-        date: "2026-11-10"
-    },
-    {
-        id: "RF-102",
-        title: "Blocked Stormwater Drain Overflowing",
-        category: "Drainage",
-        location: "Commercial Street Crossing",
-        severity: "Medium",
-        description: "Rainwater drain clogged with plastic debris and overflowing onto footpath.",
-        status: "IN_PROGRESS",
-        department: "Sanitation & Waste",
-        photoUrl: "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80",
-        aiDetected: "Stormwater Drainage Blockage",
-        aiConfidence: "94.8%",
-        aiHazard: "Environmental Hazard: Foul runoff water spilling on pedestrian sidewalk. Desilting & trash removal required.",
-        date: "2026-11-15"
-    },
-    {
-        id: "RF-103",
-        title: "Streetlight Non-Functional",
-        category: "Street Light",
-        location: "100ft Ring Road, Junction 4",
-        severity: "Low",
-        description: "Streetlights non-functional for 2 days.",
-        status: "ASSIGNED",
-        department: "Electrical & Lighting",
-        photoUrl: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80",
-        aiDetected: "Luminaire Non-Functional / Power Fault",
-        aiConfidence: "92.1%",
-        aiHazard: "Night Transit Hazard: Low visibility zone increasing accident probability. Bulb/circuit replacement needed.",
-        date: "2026-11-17"
-    }
-];
+// Realistic category-matched high-definition road hazard photos
+const CATEGORY_DEFAULT_PHOTOS = {
+    "Pothole": "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=1200&q=80",
+    "Street Light": "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=1200&q=80",
+    "Drainage": "https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=1200&q=80",
+    "Road Damage": "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q=80",
+    "Water Leakage": "https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=1200&q=80",
+    "Garbage": "https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=1200&q=80",
+    "Other": "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=1200&q=80"
+};
 
+// Clean initial state (zero dummy complaints)
+const INITIAL_COMPLAINTS = [];
+
+// Essential administrative and test credentials
 const DEFAULT_USERS = [
     { id: "USR-101", fullName: "Municipal Administrator", email: "admin@roadfix.ai", phone: "+91 9811002233", role: "ADMIN", departmentName: "Administration", password: "admin123" },
     { id: "USR-102", fullName: "Inspector Rajesh Kumar", email: "dept.roads@roadfix.ai", phone: "+91 9822334455", role: "STAFF", departmentName: "Roads & Infrastructure", password: "dept123" },
-    { id: "USR-103", fullName: "Field Staff Sunil", email: "staff@roadfix.ai", phone: "+91 9833445566", role: "STAFF", departmentName: "Sanitation & Waste", password: "staff123" },
-    { id: "USR-104", fullName: "Ramesh Citizen", email: "citizen@roadfix.ai", phone: "+91 9844556677", role: "CITIZEN", departmentName: null, password: "citizen123" }
+    { id: "USR-103", fullName: "Aarav Sharma", email: "citizen@roadfix.ai", phone: "+91 9844556677", role: "CITIZEN", departmentName: null, password: "citizen123" }
 ];
 
-const DEFAULT_FEEDBACKS = [
-    {
-        complaintId: "RF-101",
-        citizenName: "Ramesh Citizen",
-        citizenEmail: "citizen@roadfix.ai",
-        rating: 5,
-        resolutionSpeed: "Rapid & Efficient",
-        experience: "Very Good",
-        comments: "Excellent repair! Deep pothole on MG Road was filled with hot-mix bitumen and leveled completely flush within 36 hours. Very safe for daily driving now.",
-        date: "2026-11-12"
-    },
-    {
-        complaintId: "RF-102",
-        citizenName: "Priya Sharma",
-        citizenEmail: "priya.sharma@gmail.com",
-        rating: 5,
-        resolutionSpeed: "Quick",
-        experience: "Very Good",
-        comments: "Sanitation squad arrived promptly to clean the overflowing drain and removed plastic blockage. Footpath is dry and safe again.",
-        date: "2026-11-16"
-    }
-];
+// Clean initial state (zero dummy feedback)
+const DEFAULT_FEEDBACKS = [];
 
 const DEFAULT_SLIDES = [
     {
@@ -140,7 +83,7 @@ const DEFAULT_SLIDES = [
         tag: "👷 48-Hour Municipal Dispatch Commitment",
         title: "Rapid Field Repairs & <span style='color:var(--accent);'>Verified Work Orders</span>",
         desc: "Automated task routing to Roads & Infrastructure, Sanitation, and Electrical municipal squads with photographic proof of completion.",
-        image: "https://images.unsplash.com/photo-1578575437130-527eed3abbec?w=1600&auto=format&fit=crop&q=80",
+        image: "https://images.unsplash.com/photo-1584467735871-8e85353a8413?w=1600&auto=format&fit=crop&q=80",
         btn1Text: "👷 Field Staff Panel",
         btn1Link: "staff.html",
         btn2Text: "📋 View Public Issues",
@@ -148,10 +91,10 @@ const DEFAULT_SLIDES = [
     },
     {
         id: 3,
-        tag: "⚡ Transparent 5-Stage Lifecycle",
-        title: "Accountable Governance for <span style='color:var(--accent);'>Safer City Streets</span>",
-        desc: "Follow every civic complaint through Submitted, Verified, Assigned, In Progress, and Resolved milestones in real time.",
-        image: "https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=1600&auto=format&fit=crop&q=80",
+        tag: "💡 Electrical & Street Lighting",
+        title: "Active Night Monitoring & <span style='color:var(--accent);'>Dark Zone Elimination</span>",
+        desc: "Swift replacement of damaged luminaires, faulty wiring, and non-functional municipal streetlights to safeguard commuter transit.",
+        image: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1600&auto=format&fit=crop&q=80",
         btn1Text: "👤 Citizen Dashboard",
         btn1Link: "citizen.html",
         btn2Text: "🛡️ Admin Command Center",
@@ -159,10 +102,10 @@ const DEFAULT_SLIDES = [
     },
     {
         id: 4,
-        tag: "⭐ 5-Star Citizen Verification Feedback",
-        title: "Empowering Citizens & <span style='color:var(--accent);'>Building Safer Roads</span>",
-        desc: "Citizens inspect post-repair photo proof and rate municipal performance to ensure public funds deliver lasting road infrastructure.",
-        image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1600&auto=format&fit=crop&q=80",
+        tag: "🌊 Stormwater Drainage & Flood Control",
+        title: "Preventing Waterlogging & <span style='color:var(--accent);'>Protecting City Roads</span>",
+        desc: "Immediate desilting and clearing of blocked storm drains to stop road erosion, pedestrian hazards, and vehicular hydroplaning.",
+        image: "https://images.unsplash.com/photo-1547683905-f686c993aae5?w=1600&auto=format&fit=crop&q=80",
         btn1Text: "⭐ Submit Service Rating",
         btn1Link: "feedback.html",
         btn2Text: "🔑 Sign In to Portal",
@@ -172,13 +115,13 @@ const DEFAULT_SLIDES = [
 
 function initStorage() {
     if (!localStorage.getItem('roadfix_complaints')) {
-        localStorage.setItem('roadfix_complaints', JSON.stringify(INITIAL_COMPLAINTS));
+        localStorage.setItem('roadfix_complaints', JSON.stringify([]));
     }
     if (!localStorage.getItem('roadfix_users')) {
         localStorage.setItem('roadfix_users', JSON.stringify(DEFAULT_USERS));
     }
-    if (!localStorage.getItem('roadfix_feedbacks') || JSON.parse(localStorage.getItem('roadfix_feedbacks') || '[]').length === 0) {
-        localStorage.setItem('roadfix_feedbacks', JSON.stringify(DEFAULT_FEEDBACKS));
+    if (!localStorage.getItem('roadfix_feedbacks')) {
+        localStorage.setItem('roadfix_feedbacks', JSON.stringify([]));
     }
     if (!localStorage.getItem('roadfix_slides')) {
         localStorage.setItem('roadfix_slides', JSON.stringify(DEFAULT_SLIDES));
@@ -187,6 +130,9 @@ function initStorage() {
 initStorage();
 
 const RoadFix = {
+    CATEGORY_DEFAULT_PHOTOS,
+    AI_PREDICTIONS,
+
     // 1. Get all complaints
     async getComplaints() {
         let serverComplaints = [];

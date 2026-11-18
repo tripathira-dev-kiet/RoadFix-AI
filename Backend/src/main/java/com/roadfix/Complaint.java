@@ -1,6 +1,9 @@
 package com.roadfix;
 
+import org.springframework.data.annotation.Id;
+
 public class Complaint {
+    @Id
     private String id;
     private String title;
     private String category;

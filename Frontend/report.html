@@ -257,14 +257,19 @@
             btn.disabled = true;
             btn.innerText = 'Submitting Complaint...';
 
+            const cat = document.getElementById('issueType').value;
+            const defaultPhoto = (RoadFix.CATEGORY_DEFAULT_PHOTOS && RoadFix.CATEGORY_DEFAULT_PHOTOS[cat]) 
+                ? RoadFix.CATEGORY_DEFAULT_PHOTOS[cat] 
+                : "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=1200&q=80";
+
             const newComplaint = {
-                category: document.getElementById('issueType').value,
-                title: document.getElementById('title').value || document.getElementById('issueType').value,
+                category: cat,
+                title: document.getElementById('title').value || cat,
                 location: document.getElementById('location').value,
                 severity: document.getElementById('severity').value,
                 description: document.getElementById('description').value,
                 citizenEmail: document.getElementById('citizenEmail').value,
-                photoUrl: selectedPhotoData || "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80"
+                photoUrl: selectedPhotoData || defaultPhoto
             };
 
             const saved = await RoadFix.addComplaint(newComplaint);

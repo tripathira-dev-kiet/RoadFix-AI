@@ -338,7 +338,7 @@
             const issue = await RoadFix.getComplaintById(trackingId);
 
             if (!issue) {
-                msg.innerHTML = `<span style="color:#dc2626;">❌ Complaint with ID "${trackingId}" not found. Try RF-101, RF-102 or submit a new report.</span>`;
+                msg.innerHTML = `<span style="color:#dc2626;">❌ Complaint with ID "${trackingId}" not found. Please check your tracking number or file a new report.</span>`;
                 resultBox.style.display = 'none';
                 return;
             }
